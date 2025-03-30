@@ -18,16 +18,21 @@ export const command: MessageCommand = {
   command: 'get',
   aliases: ['i', 'img', 'image'],
   description: 'Get media',
-  async handleCommand(message, args) {
+  async handleCommand(message, args, _commands, options) {
     const fileName: string | undefined = args[0];
     if (fileName && !validateFileName(fileName))
       return message.reply('Media name contains invalid characters!');
 
     const shouldDisplayInfo = args[1] === '+info';
+    const shouldSearch = options.search as string | undefined;
 
     let media = await prisma.media.findMany({
       where: {
-        name: fileName,
+        name: shouldSearch
+          ? {
+              search: fileName,
+            }
+          : fileName,
       },
     });
     if (!media.length) return message.reply('No media found!');

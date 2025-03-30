@@ -9,6 +9,7 @@ export interface MessageCommand {
     message: Message<true>,
     args: string[],
     commands: Map<string, MessageCommand>,
+    options: Record<string, unknown>,
   ): Awaitable<unknown>;
 }
 

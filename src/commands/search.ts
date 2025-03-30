@@ -8,7 +8,8 @@ export const command: MessageCommand = {
     const searchValue: string | undefined = args[0];
 
     await commands.get('get')!.handleCommand(message, [], commands, {
-      search: searchValue,
+      search: true,
+      searchValue,
     });
   },
 };

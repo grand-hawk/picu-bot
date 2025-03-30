@@ -24,19 +24,22 @@ export const command: MessageCommand = {
       return message.reply('Media name contains invalid characters!');
 
     const shouldDisplayInfo = args[1] === '+info';
-    const searchOption = options.search as string | undefined;
+    const { search, searchValue } = options as {
+      search: boolean;
+      searchValue: string;
+    };
 
     let media = await prisma.media.findMany({
       where: {
-        name: searchOption
+        name: search
           ? {
-              contains: searchOption,
+              contains: searchValue,
             }
           : fileName,
       },
     });
     if (!media.length) return message.reply('No media found!');
-    if (!fileName && !searchOption)
+    if (!fileName && !search)
       media = [media[Math.floor(Math.random() * media.length)]];
 
     let mediaIndex = 0;

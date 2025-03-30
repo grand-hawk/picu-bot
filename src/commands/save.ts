@@ -17,7 +17,7 @@ export const command: MessageCommand = {
     const { member } = message;
     if (!member) return;
 
-    if (!env.WRITE_ROLES.some((roleId) => member.roles.cache.get(roleId)))
+    if (!env.SAVE_ROLES.some((roleId) => member.roles.cache.get(roleId)))
       return message.reply(
         `You do not have permission to use ${env.COMMAND_PREFIX}${command.command}!`,
       );

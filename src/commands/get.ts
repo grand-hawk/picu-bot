@@ -40,22 +40,27 @@ export const command: MessageCommand = {
         downloaded: true,
       },
     };
-    const baseNameQuery: Prisma.MediaWhereInput = {
-      name: search
-        ? {
-            contains: searchValue,
-          }
-        : fileName,
-    };
+
+    const nameQuery: Prisma.MediaWhereInput = {};
+    if (search) {
+      if (searchValue) nameQuery.name = { contains: searchValue };
+    } else nameQuery.name = fileName;
 
     if (searchIndex && !Number.isNaN(searchIndex))
-      query.where!.OR = [
-        baseNameQuery,
-        {
-          index: searchIndex,
-        },
-      ];
-    else query.where = { ...query.where, ...baseNameQuery };
+      query.where = {
+        ...query.where,
+        OR: [
+          nameQuery,
+          {
+            index: searchIndex,
+          },
+        ],
+      };
+    else
+      query.where = {
+        ...query.where,
+        ...nameQuery,
+      };
 
     let media = await prisma.media.findMany(query);
     if (!media.length) return message.reply('No media found!');
@@ -87,14 +92,24 @@ export const command: MessageCommand = {
     };
 
     const getOptionsForCurrentMedia = async () => {
+      const baseOptions = {
+        components: media.length > 1 || allowDeletion ? [getRow()] : undefined,
+      } satisfies InteractionUpdateOptions;
+
       const targetMedia = media[mediaIndex];
       if (!targetMedia)
-        return { content: 'Error!' } satisfies InteractionUpdateOptions;
+        return {
+          content: 'Error!',
+          files: [],
+          ...baseOptions,
+        } satisfies InteractionUpdateOptions;
 
       const attachment = await attachmentFromMedia(targetMedia);
       if (!attachment)
         return {
           content: 'Could not get media!',
+          files: [],
+          ...baseOptions,
         } satisfies InteractionUpdateOptions;
 
       return {
@@ -107,11 +122,11 @@ export const command: MessageCommand = {
             : ''
         }`,
         files: [attachment],
-        components: media.length > 1 || allowDeletion ? [getRow()] : undefined,
         allowedMentions: {
           repliedUser: true,
           users: [message.author.id],
         },
+        ...baseOptions,
       } satisfies InteractionUpdateOptions;
     };
 

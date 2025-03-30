@@ -1,4 +1,3 @@
-export function formatIndex(index: number, force: boolean = false) {
-  if (index === 1 && !force) return '';
+export function formatIndex(index: number) {
   return ` #${index}`;
 }

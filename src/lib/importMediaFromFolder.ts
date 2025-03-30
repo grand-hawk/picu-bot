@@ -43,7 +43,7 @@ export async function importMediaFromFolder(folderPath: string) {
     });
 
     log.info(
-      `Imported "${file.path}" as "${media.name}"${formatIndex(allWithSameName.length, true)} (${media.uuid})`,
+      `Imported "${file.path}" as "${media.name}"${formatIndex(allWithSameName.length)} (${media.uuid})`,
     );
 
     importedMedia.push(media);

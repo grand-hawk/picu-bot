@@ -74,7 +74,7 @@ export const command: MessageCommand = {
       if (!attachment) return { content: 'Could not get media!' };
 
       return {
-        content: `${targetMedia.name}${formatIndex(mediaIndex + 1, media.length > 1)}`,
+        content: `${targetMedia.name}${formatIndex(mediaIndex + 1)}`,
         files: [attachment],
         components: media.length > 1 ? [getRow()] : undefined,
       };
@@ -129,7 +129,7 @@ export const command: MessageCommand = {
               });
 
               await i.update({
-                content: `Deleted "${targetMedia.name}"${formatIndex(mediaIndex + 1, media.length > 1)}`,
+                content: `Deleted "${targetMedia.name}"${formatIndex(mediaIndex + 1)}`,
                 files: [],
                 components: [],
               });

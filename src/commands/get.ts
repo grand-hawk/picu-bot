@@ -68,7 +68,7 @@ export const command: MessageCommand = {
             ? '\n\n**Info**' +
               `\nCreated by: ${targetMedia.createdBy ? `<@${targetMedia.createdBy}>` : 'Unknown'}` +
               `\nCreated at: <t:${Math.floor(targetMedia.createdAt.getTime() / 1_000)}:F>` +
-              `\nContent type: ${targetMedia.contentType}`
+              `\nContent type: \`${targetMedia.contentType}\``
             : ''
         }`,
         files: [attachment],

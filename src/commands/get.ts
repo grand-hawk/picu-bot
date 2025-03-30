@@ -14,6 +14,7 @@ import { formatIndex } from '@/utils/formatIndex';
 import { validateFileName } from '@/utils/validateFileName';
 
 import type { MessageCommand } from '@/commands';
+import type { Prisma } from '@prisma/client';
 import type { InteractionUpdateOptions } from 'discord.js';
 
 export const command: MessageCommand = {
@@ -34,27 +35,29 @@ export const command: MessageCommand = {
     // authenticated in the delete command
     const allowDeletion = options.allowDeletion as boolean | undefined;
 
-    let media = await prisma.media.findMany({
+    const query: Prisma.MediaFindManyArgs = {
       where: {
-        OR: [
-          {
-            name: search
-              ? {
-                  contains: searchValue,
-                }
-              : fileName,
-          },
-          ...(searchIndex && !Number.isNaN(searchIndex)
-            ? [
-                {
-                  index: searchIndex,
-                },
-              ]
-            : []),
-        ],
         downloaded: true,
       },
-    });
+    };
+    const baseNameQuery: Prisma.MediaWhereInput = {
+      name: search
+        ? {
+            contains: searchValue,
+          }
+        : fileName,
+    };
+
+    if (searchIndex && !Number.isNaN(searchIndex))
+      query.where!.OR = [
+        baseNameQuery,
+        {
+          index: searchIndex,
+        },
+      ];
+    else query.where = { ...query.where, ...baseNameQuery };
+
+    let media = await prisma.media.findMany(query);
     if (!media.length) return message.reply('No media found!');
     if (!fileName && !search)
       media = [media[Math.floor(Math.random() * media.length)]];

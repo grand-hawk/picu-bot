@@ -75,6 +75,10 @@ export const command: MessageCommand = {
         }`,
         files: [attachment],
         components: media.length > 1 ? [getRow()] : undefined,
+        allowedMentions: {
+          repliedUser: true,
+          users: [message.author.id],
+        },
       } satisfies InteractionUpdateOptions;
     };
 

@@ -77,83 +77,81 @@ export const command: MessageCommand = {
       return {
         content: `${targetMedia.name}${formatIndex(mediaIndex + 1)}`,
         files: [attachment],
-        components: media.length > 1 ? [getRow()] : undefined,
+        components: [getRow()],
       };
     };
 
     const response = await message.reply(await getOptionsForCurrentMedia());
 
-    if (media.length > 1) {
-      const collector = response.createMessageComponentCollector({
-        filter: (i) => i.user.id === message.author.id,
-        componentType: ComponentType.Button,
-        time: COLLECTOR_TIMEOUT,
-      });
+    const collector = response.createMessageComponentCollector({
+      filter: (i) => i.user.id === message.author.id,
+      componentType: ComponentType.Button,
+      time: COLLECTOR_TIMEOUT,
+    });
 
-      collector.on('collect', async (i) => {
-        // eslint-disable-next-line default-case
-        switch (i.customId) {
-          case `${message.id}-previous`: {
-            if (mediaIndex === 0) return;
-            mediaIndex -= 1;
+    collector.on('collect', async (i) => {
+      // eslint-disable-next-line default-case
+      switch (i.customId) {
+        case `${message.id}-previous`: {
+          if (mediaIndex === 0) return;
+          mediaIndex -= 1;
 
-            break;
-          }
+          break;
+        }
 
-          case `${message.id}-next`: {
-            if (mediaIndex === media.length - 1) return;
-            mediaIndex += 1;
+        case `${message.id}-next`: {
+          if (mediaIndex === media.length - 1) return;
+          mediaIndex += 1;
 
-            break;
-          }
+          break;
+        }
 
-          case `${message.id}-delete`: {
-            const targetMedia = media[mediaIndex];
-            if (!targetMedia) return;
+        case `${message.id}-delete`: {
+          const targetMedia = media[mediaIndex];
+          if (!targetMedia) return;
 
-            await prisma.media.update({
+          await prisma.media.update({
+            where: {
+              uuid: targetMedia.uuid,
+            },
+            data: {
+              downloaded: false,
+            },
+          });
+
+          try {
+            await rm(getPath(targetMedia.uuid));
+
+            await prisma.media.delete({
               where: {
                 uuid: targetMedia.uuid,
               },
-              data: {
-                downloaded: false,
-              },
             });
 
-            try {
-              await rm(getPath(targetMedia.uuid));
+            await i.update({
+              content: `Deleted "${targetMedia.name}"${formatIndex(mediaIndex + 1)}`,
+              files: [],
+              components: [],
+            });
 
-              await prisma.media.delete({
-                where: {
-                  uuid: targetMedia.uuid,
-                },
-              });
+            log.info(
+              `Deleted media "${targetMedia.name}" (${targetMedia.uuid})`,
+            );
+          } catch (err) {
+            log.error(err, `Failed to delete media "${targetMedia.uuid}"`);
 
-              await i.update({
-                content: `Deleted "${targetMedia.name}"${formatIndex(mediaIndex + 1)}`,
-                files: [],
-                components: [],
-              });
-
-              log.info(
-                `Deleted media "${targetMedia.name}" (${targetMedia.uuid})`,
-              );
-            } catch (err) {
-              log.error(err, `Failed to delete media "${targetMedia.uuid}"`);
-
-              await i.update({
-                content: 'Failed to delete media!',
-                files: [],
-                components: [],
-              });
-            }
-
-            return;
+            await i.update({
+              content: 'Failed to delete media!',
+              files: [],
+              components: [],
+            });
           }
-        }
 
-        await i.update(await getOptionsForCurrentMedia());
-      });
-    }
+          return;
+        }
+      }
+
+      await i.update(await getOptionsForCurrentMedia());
+    });
   },
 };

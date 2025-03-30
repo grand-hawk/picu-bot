@@ -4,7 +4,7 @@ import klaw from 'klaw';
 
 import { env } from '@/env';
 import { log } from '@/pino';
-import { importPath } from '@/utils//importPath';
+import { importPath } from '@/utils/importPath';
 
 import type { CommandModule, MessageCommand } from '@/commands';
 import type { ClientEvents } from 'discord.js';

@@ -10,7 +10,7 @@ import { COLLECTOR_TIMEOUT } from '@/constants';
 import { attachmentFromMedia } from '@/lib/attachmentFromMedia';
 import { deleteMedia } from '@/lib/deleteMedia';
 import { prisma } from '@/services/database';
-import { formatIndex } from '@/utils//formatIndex';
+import { formatIndex } from '@/utils/formatIndex';
 import { validateFileName } from '@/utils/validateFileName';
 
 import type { MessageCommand } from '@/commands';

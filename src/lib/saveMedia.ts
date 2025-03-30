@@ -8,7 +8,7 @@ import ky from 'ky';
 import { env } from '@/env';
 import { log } from '@/pino';
 import { prisma } from '@/services/database';
-import { safeStat } from '@/utils//safeStat';
+import { safeStat } from '@/utils/safeStat';
 import { formatIndex } from '@/utils/formatIndex';
 import { getPath } from '@/utils/getPath';
 

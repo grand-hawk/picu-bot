@@ -4,7 +4,7 @@ import { Client, IntentsBitField } from 'discord.js';
 import klaw from 'klaw';
 
 import { env } from '@/env';
-import { importPath } from '@/utils//importPath';
+import { importPath } from '@/utils/importPath';
 
 import type { EventModule } from '@/services/bot/events';
 

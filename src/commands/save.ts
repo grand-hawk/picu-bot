@@ -2,7 +2,7 @@ import { escapeMarkdown } from 'discord.js';
 
 import { env } from '@/env';
 import { saveMedia } from '@/lib/saveMedia';
-import { formatIndex } from '@/utils//formatIndex';
+import { formatIndex } from '@/utils/formatIndex';
 import { getRepliedToMessage } from '@/utils/getRepliedToMessage';
 import { maxUploadSizeFromTier } from '@/utils/maxUploadSizeFromTier';
 import { validateFileName } from '@/utils/validateFileName';

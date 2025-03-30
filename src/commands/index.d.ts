@@ -1,4 +1,4 @@
-import type { Awaitable } from '@/utils//awaitable';
+import type { Awaitable } from '@/utils/awaitable';
 import type { Message } from 'discord.js';
 
 export interface MessageCommand {

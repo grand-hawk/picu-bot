@@ -61,7 +61,7 @@ export async function saveMedia(
   } catch (err) {
     log.error(
       err,
-      `Failed to save media "${media.name}"${formatIndex(media.index)}`,
+      `Failed to save media "${media.name}"${formatIndex(media.index)} (${media.uuid})`,
     );
 
     await prisma.media.delete({

@@ -64,7 +64,7 @@ export const command: MessageCommand = {
         } satisfies InteractionUpdateOptions;
 
       return {
-        content: `${targetMedia.name}${formatIndex(mediaIndex + 1)}${
+        content: `${targetMedia.name}${formatIndex(targetMedia.index)}${
           displayInfo
             ? '\n\n**Info**' +
               `\nCreated by: ${targetMedia.createdBy ? `<@${targetMedia.createdBy}>` : 'Unknown'}` +

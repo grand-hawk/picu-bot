@@ -36,14 +36,8 @@ export async function importMediaFromFolder(folderPath: string) {
 
     await copyFile(file.path, getPath(media.uuid));
 
-    const allWithSameName = await prisma.media.findMany({
-      where: {
-        name: media.name,
-      },
-    });
-
     log.info(
-      `Imported "${file.path}" as "${media.name}"${formatIndex(allWithSameName.length)} (${media.uuid})`,
+      `Imported "${file.path}" as "${media.name}"${formatIndex(media.index)} (${media.uuid})`,
     );
 
     importedMedia.push(media);

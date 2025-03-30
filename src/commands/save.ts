@@ -58,7 +58,7 @@ export const command: MessageCommand = {
         break;
       }
 
-    if (!downloadURL) return message.reply('No media found!');
+    if (!downloadURL) return message.reply('No valid media found!');
 
     const media = await saveMedia(
       fileName,

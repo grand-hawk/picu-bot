@@ -3,6 +3,7 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ComponentType,
+  escapeMarkdown,
 } from 'discord.js';
 
 import { COLLECTOR_TIMEOUT } from '@/constants';
@@ -83,7 +84,7 @@ export const command: MessageCommand = {
         } satisfies InteractionUpdateOptions;
 
       return {
-        content: `${targetMedia.name}${formatIndex(targetMedia.index)}${
+        content: `${escapeMarkdown(targetMedia.name)}${formatIndex(targetMedia.index)}${
           shouldDisplayInfo
             ? '\n\n**Info**' +
               `\nCreated by: ${targetMedia.createdBy ? `<@${targetMedia.createdBy}>` : 'Unknown'}` +
@@ -139,7 +140,7 @@ export const command: MessageCommand = {
               );
 
               await i.update({
-                content: `Deleted "${targetMedia.name}"${formatIndex(targetMedia.index)}`,
+                content: `Deleted "${escapeMarkdown(targetMedia.name)}"${formatIndex(targetMedia.index)}`,
                 files: [],
                 components: [],
               });

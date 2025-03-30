@@ -1,3 +1,5 @@
+import { escapeMarkdown } from 'discord.js';
+
 import { env } from '@/env';
 import { saveMedia } from '@/lib/saveMedia';
 import { log } from '@/pino';
@@ -42,7 +44,7 @@ export const command: MessageCommand = {
         );
 
         await message.reply(
-          `Saved as "${media.name}"${formatIndex(media.index)}`,
+          `Saved as "${escapeMarkdown(media.name)}"${formatIndex(media.index)}`,
         );
       } else {
         await message.reply('There was an error saving the media!');

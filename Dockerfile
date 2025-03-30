@@ -15,8 +15,8 @@ RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install
 ARG DATABASE_URL
 ENV DATABASE_URL=$DATABASE_URL
 
-RUN pnpx prisma generate
-RUN pnpx prisma migrate deploy
+RUN pnpm prisma generate
+RUN pnpm prisma migrate deploy
 
 RUN pnpm run build
 

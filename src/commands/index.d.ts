@@ -7,7 +7,7 @@ export interface MessageCommand {
   description?: string;
   handleCommand(
     message: Message<true>,
-    arguments: string[],
+    args: string[],
     commands: Map<string, MessageCommand>,
   ): Awaitable<unknown>;
 }

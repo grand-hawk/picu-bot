@@ -66,7 +66,7 @@ export const command: MessageCommand = {
         content: `${targetMedia.name}${formatIndex(mediaIndex + 1)}${
           displayInfo
             ? '\n\n**Info**' +
-              `\nCreated by: ${targetMedia.createdBy ? `<@${targetMedia.createdBy}>` : 'System'}` +
+              `\nCreated by: ${targetMedia.createdBy ? `<@${targetMedia.createdBy}>` : 'Unknown'}` +
               `\nCreated at: <t:${Math.floor(targetMedia.createdAt.getTime() / 1_000)}:F>` +
               `\nContent type: ${targetMedia.contentType}`
             : ''

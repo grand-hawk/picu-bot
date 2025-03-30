@@ -9,6 +9,7 @@ import { env } from '@/env';
 import { log } from '@/pino';
 import { prisma } from '@/services/database';
 import { safeStat } from '@/utils//safeStat';
+import { formatIndex } from '@/utils/formatIndex';
 import { getPath } from '@/utils/getPath';
 
 export async function saveMedia(
@@ -58,7 +59,10 @@ export async function saveMedia(
 
     return updatedMedia;
   } catch (err) {
-    log.error(err, `Failed to save media "${media.name}"`);
+    log.error(
+      err,
+      `Failed to save media "${media.name}"${formatIndex(media.index)}`,
+    );
 
     await prisma.media.delete({
       where: {

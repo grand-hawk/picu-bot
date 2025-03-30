@@ -38,7 +38,7 @@ export const command: MessageCommand = {
 
       if (media) {
         log.info(
-          `Saved media "${media.name}" (${media.uuid}) from ${message.author.id}`,
+          `Saved media "${media.name}"${formatIndex(media.index)} (${media.uuid}) from ${message.author.id}`,
         );
 
         await message.reply(

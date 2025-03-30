@@ -112,7 +112,7 @@ export const command: MessageCommand = {
           const success = await deleteMedia(targetMedia);
           if (success) {
             log.info(
-              `Deleted media "${targetMedia.name}" (${targetMedia.uuid})`,
+              `Deleted media "${targetMedia.name}"${formatIndex(targetMedia.index)} (${targetMedia.uuid})`,
             );
 
             await i.update({

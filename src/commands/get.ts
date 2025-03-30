@@ -7,6 +7,8 @@ import {
 
 import { COLLECTOR_TIMEOUT } from '@/constants';
 import { attachmentFromMedia } from '@/lib/attachmentFromMedia';
+import { deleteMedia } from '@/lib/deleteMedia';
+import { log } from '@/pino';
 import { prisma } from '@/services/database';
 import { formatIndex } from '@/utils//formatIndex';
 import { validateFileName } from '@/utils/validateFileName';
@@ -25,9 +27,11 @@ export const command: MessageCommand = {
 
     const shouldDisplayInfo = args[1] === '+info';
     const { search, searchValue } = options as {
-      search: boolean;
-      searchValue: string;
+      search: boolean | undefined;
+      searchValue: string | undefined;
     };
+    // authenticated in the delete command
+    const shouldDelete = options.delete as boolean | undefined;
 
     let media = await prisma.media.findMany({
       where: {
@@ -56,11 +60,15 @@ export const command: MessageCommand = {
         .setLabel('Next')
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(mediaIndex === media.length - 1);
+      const deleteButton = new ButtonBuilder()
+        .setCustomId(`${message.id}-delete`)
+        .setLabel('Delete')
+        .setStyle(ButtonStyle.Danger);
 
-      return new ActionRowBuilder<ButtonBuilder>().addComponents(
-        previous,
-        next,
-      );
+      const components: ButtonBuilder[] = [previous, next];
+      if (shouldDelete) components.push(deleteButton);
+
+      return new ActionRowBuilder<ButtonBuilder>().addComponents(components);
     };
 
     const getOptionsForCurrentMedia = async () => {
@@ -116,6 +124,33 @@ export const command: MessageCommand = {
             mediaIndex += 1;
 
             break;
+          }
+
+          case `${message.id}-delete`: {
+            if (!shouldDelete) return;
+
+            const targetMedia = media[mediaIndex];
+            if (!targetMedia) return;
+
+            const success = await deleteMedia(targetMedia);
+            if (success) {
+              log.info(
+                `Deleted media "${targetMedia.name}"${formatIndex(targetMedia.index)} (${targetMedia.uuid})`,
+              );
+
+              await i.update({
+                content: `Deleted "${targetMedia.name}"${formatIndex(targetMedia.index)}`,
+                files: [],
+                components: [],
+              });
+            } else
+              await i.update({
+                content: 'Failed to delete media!',
+                files: [],
+                components: [],
+              });
+
+            return;
           }
         }
 

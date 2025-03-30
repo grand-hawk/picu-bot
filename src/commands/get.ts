@@ -31,7 +31,7 @@ export const command: MessageCommand = {
       searchValue: string | undefined;
     };
     // authenticated in the delete command
-    const shouldDelete = options.delete as boolean | undefined;
+    const allowDeletion = options.delete as boolean | undefined;
 
     let media = await prisma.media.findMany({
       where: {
@@ -66,7 +66,7 @@ export const command: MessageCommand = {
         .setStyle(ButtonStyle.Danger);
 
       const components: ButtonBuilder[] = [previous, next];
-      if (shouldDelete) components.push(deleteButton);
+      if (allowDeletion) components.push(deleteButton);
 
       return new ActionRowBuilder<ButtonBuilder>().addComponents(components);
     };
@@ -92,7 +92,7 @@ export const command: MessageCommand = {
             : ''
         }`,
         files: [attachment],
-        components: media.length > 1 ? [getRow()] : undefined,
+        components: media.length > 1 || allowDeletion ? [getRow()] : undefined,
         allowedMentions: {
           repliedUser: true,
           users: [message.author.id],
@@ -127,7 +127,7 @@ export const command: MessageCommand = {
           }
 
           case `${message.id}-delete`: {
-            if (!shouldDelete) return;
+            if (!allowDeletion) return;
 
             const targetMedia = media[mediaIndex];
             if (!targetMedia) return;

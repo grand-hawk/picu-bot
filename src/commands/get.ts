@@ -22,7 +22,7 @@ export const command: MessageCommand = {
     if (fileName && !validateFileName(fileName))
       return message.reply('Media name contains invalid characters!');
 
-    const displayInfo = args[args.length - 1] === '+info';
+    const shouldDisplayInfo = args[1] === '+info';
 
     let media = await prisma.media.findMany({
       where: {
@@ -65,7 +65,7 @@ export const command: MessageCommand = {
 
       return {
         content: `${targetMedia.name}${formatIndex(targetMedia.index)}${
-          displayInfo
+          shouldDisplayInfo
             ? '\n\n**Info**' +
               `\nCreated by: ${targetMedia.createdBy ? `<@${targetMedia.createdBy}>` : 'Unknown'}` +
               `\nCreated at: <t:${Math.floor(targetMedia.createdAt.getTime() / 1_000)}:F>` +

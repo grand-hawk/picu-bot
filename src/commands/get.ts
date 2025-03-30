@@ -24,6 +24,7 @@ export const command: MessageCommand = {
     const fileName: string | undefined = args[0];
     if (fileName && !validateFileName(fileName))
       return message.reply('Media name contains invalid characters!');
+    const searchIndex = fileName ? Number(fileName) : undefined;
 
     const shouldDisplayInfo = args[1] === '+info';
     const { search, searchValue } = options as {
@@ -35,11 +36,22 @@ export const command: MessageCommand = {
 
     let media = await prisma.media.findMany({
       where: {
-        name: search
-          ? {
-              contains: searchValue,
-            }
-          : fileName,
+        OR: [
+          {
+            name: search
+              ? {
+                  contains: searchValue,
+                }
+              : fileName,
+          },
+          ...(searchIndex && !Number.isNaN(searchIndex)
+            ? [
+                {
+                  index: searchIndex,
+                },
+              ]
+            : []),
+        ],
         downloaded: true,
       },
     });

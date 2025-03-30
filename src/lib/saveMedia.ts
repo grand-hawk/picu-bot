@@ -16,6 +16,7 @@ export async function saveMedia(
   name: string,
   creatorId: string,
   downloadURL: string,
+  maxSize: number = 1e7,
 ) {
   const response = await ky.get(downloadURL, {
     throwHttpErrors: false,
@@ -45,7 +46,8 @@ export async function saveMedia(
   const contentLength = parseInt(contentLengthHeader, 10);
   if (Number.isNaN(contentLength))
     throw new Error('Response returned invalid content length header');
-  if (contentLength > 1e7) throw new Error('Response is larger than 10MB');
+  if (contentLength > maxSize)
+    throw new Error(`Response is larger than ${maxSize} bytes`);
 
   const media = await prisma.media.create({
     data: {

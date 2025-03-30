@@ -4,6 +4,7 @@ import { env } from '@/env';
 import { saveMedia } from '@/lib/saveMedia';
 import { formatIndex } from '@/utils//formatIndex';
 import { getRepliedToMessage } from '@/utils/getRepliedToMessage';
+import { maxUploadSizeFromTier } from '@/utils/maxUploadSizeFromTier';
 import { validateFileName } from '@/utils/validateFileName';
 
 import type { MessageCommand } from '@/commands';
@@ -27,12 +28,12 @@ export const command: MessageCommand = {
       return message.reply('Media name contains invalid characters!');
 
     const targetMessage = (await getRepliedToMessage(message)) || message;
-
+    const maxSize = maxUploadSizeFromTier(targetMessage.guild.premiumTier);
     let downloadURL: string | undefined;
 
     if (!downloadURL)
       for (const attachment of targetMessage.attachments.values()) {
-        if (attachment.size > 1e7) continue;
+        if (attachment.size > maxSize) continue;
 
         downloadURL = attachment.url;
 
@@ -59,7 +60,12 @@ export const command: MessageCommand = {
 
     if (!downloadURL) return message.reply('No media found!');
 
-    const media = await saveMedia(fileName, message.author.id, downloadURL);
+    const media = await saveMedia(
+      fileName,
+      message.author.id,
+      downloadURL,
+      maxSize,
+    );
 
     if (media)
       await message.reply(

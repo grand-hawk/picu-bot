@@ -14,7 +14,7 @@ export const command: MessageCommand = {
 
     for (const [, commandModule] of commands)
       fields.push({
-        name: `${env.COMMAND_PREFIX}${commandModule.command}`,
+        name: `\`${env.COMMAND_PREFIX}${commandModule.command}\``,
         value:
           `Aliases: ${commandModule.aliases?.length ? commandModule.aliases.map((alias) => `\`${env.COMMAND_PREFIX}${alias}\``).join(', ') : 'None'}` +
           `\nDescription: ${commandModule.description ? escapeMarkdown(commandModule.description) : 'None'}`,

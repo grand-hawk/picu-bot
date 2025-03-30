@@ -16,17 +16,17 @@ export const command: MessageCommand = {
   command: 'get',
   aliases: ['i', 'img', 'image'],
   async handleCommand(message, args) {
-    const fileName = args[0];
-    if (!fileName) return message.reply('Please provide a media name!');
-    if (!validateFileName(fileName))
+    const fileName: string | undefined = args[0];
+    if (fileName && !validateFileName(fileName))
       return message.reply('Media name contains invalid characters!');
 
-    const media = await prisma.media.findMany({
+    let media = await prisma.media.findMany({
       where: {
         name: fileName,
       },
     });
     if (!media.length) return message.reply('No media found!');
+    if (!fileName) media = [media[Math.floor(Math.random() * media.length)]];
 
     let mediaIndex = 0;
 
@@ -58,7 +58,10 @@ export const command: MessageCommand = {
       const indexString = formatIndex(mediaIndex + 1, media.length > 1);
 
       return {
-        content: indexString ? `${targetMedia.name}${indexString}` : undefined,
+        content:
+          indexString || !fileName
+            ? `${targetMedia.name}${indexString}`
+            : undefined,
         files: [attachment],
         components: media.length > 1 ? [getRow()] : undefined,
       };

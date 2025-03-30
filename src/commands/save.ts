@@ -10,6 +10,7 @@ import type { MessageCommand } from '@/commands';
 export const command: MessageCommand = {
   command: 'save',
   aliases: ['s'],
+  description: 'Save media',
   async handleCommand(message, args) {
     const { member } = message;
     if (!member) return;

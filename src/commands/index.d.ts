@@ -4,6 +4,7 @@ import type { Message } from 'discord.js';
 export interface MessageCommand {
   command: string;
   aliases?: string[];
+  description?: string;
   handleCommand(
     message: Message<true>,
     arguments: string[],

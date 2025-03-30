@@ -21,6 +21,7 @@ import type { MessageCommand } from '@/commands';
 export const command: MessageCommand = {
   command: 'delete',
   aliases: ['d', 'del'],
+  description: 'Delete media',
   async handleCommand(message, args) {
     const { member } = message;
     if (!member) return;

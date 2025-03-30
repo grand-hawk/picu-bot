@@ -17,6 +17,7 @@ import type { InteractionUpdateOptions } from 'discord.js';
 export const command: MessageCommand = {
   command: 'get',
   aliases: ['i', 'img', 'image'],
+  description: 'Get media',
   async handleCommand(message, args) {
     const fileName: string | undefined = args[0];
     if (fileName && !validateFileName(fileName))

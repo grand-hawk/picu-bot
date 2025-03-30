@@ -5,8 +5,7 @@ export const command: MessageCommand = {
   aliases: ['find'],
   description: 'Search media',
   async handleCommand(message, args, commands) {
-    const searchValue = args[0];
-    if (!searchValue) return message.reply('Please provide a search value!');
+    const searchValue: string | undefined = args[0];
 
     await commands.get('get')!.handleCommand(message, [], commands, {
       search: searchValue,

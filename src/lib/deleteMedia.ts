@@ -2,6 +2,7 @@ import { rm } from 'node:fs/promises';
 
 import { log } from '@/pino';
 import { prisma } from '@/services/database';
+import { formatIndex } from '@/utils/formatIndex';
 import { getPath } from '@/utils/getPath';
 
 import type { Media } from '@prisma/client';
@@ -25,8 +26,14 @@ export async function deleteMedia(media: Media) {
       },
     });
 
+    log.info(
+      `Deleted media "${media.name}"${formatIndex(media.index)} (${media.uuid})`,
+    );
+
     return true;
   } catch (err) {
     log.error(err, `Failed to delete media "${media.uuid}"`);
+
+    return false;
   }
 }

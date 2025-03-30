@@ -2,7 +2,6 @@ import { escapeMarkdown } from 'discord.js';
 
 import { env } from '@/env';
 import { saveMedia } from '@/lib/saveMedia';
-import { log } from '@/pino';
 import { formatIndex } from '@/utils//formatIndex';
 import { getRepliedToMessage } from '@/utils/getRepliedToMessage';
 import { validateFileName } from '@/utils/validateFileName';
@@ -38,17 +37,11 @@ export const command: MessageCommand = {
         attachment.url,
       );
 
-      if (media) {
-        log.info(
-          `Saved media "${media.name}"${formatIndex(media.index)} (${media.uuid}) from ${message.author.id}`,
-        );
-
+      if (media)
         await message.reply(
           `Saved as "${escapeMarkdown(media.name)}"${formatIndex(media.index)}`,
         );
-      } else {
-        await message.reply('There was an error saving the media!');
-      }
+      else await message.reply('There was an error saving the media!');
     }
   },
 };

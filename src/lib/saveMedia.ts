@@ -14,7 +14,7 @@ import { getPath } from '@/utils/getPath';
 
 export async function saveMedia(
   name: string,
-  creator: string,
+  creatorId: string,
   downloadUrl: string,
 ) {
   const response = await ky.get(downloadUrl, {
@@ -34,7 +34,7 @@ export async function saveMedia(
     data: {
       name,
       contentType,
-      createdBy: creator,
+      createdBy: creatorId,
     },
   });
 
@@ -56,6 +56,10 @@ export async function saveMedia(
         downloaded: true,
       },
     });
+
+    log.info(
+      `Saved media "${media.name}"${formatIndex(media.index)} (${media.uuid}) from ${creatorId}`,
+    );
 
     return updatedMedia;
   } catch (err) {

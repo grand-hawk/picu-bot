@@ -9,7 +9,6 @@ import {
 import { COLLECTOR_TIMEOUT } from '@/constants';
 import { attachmentFromMedia } from '@/lib/attachmentFromMedia';
 import { deleteMedia } from '@/lib/deleteMedia';
-import { log } from '@/pino';
 import { prisma } from '@/services/database';
 import { formatIndex } from '@/utils//formatIndex';
 import { validateFileName } from '@/utils/validateFileName';
@@ -134,17 +133,13 @@ export const command: MessageCommand = {
             if (!targetMedia) return;
 
             const success = await deleteMedia(targetMedia);
-            if (success) {
-              log.info(
-                `Deleted media "${targetMedia.name}"${formatIndex(targetMedia.index)} (${targetMedia.uuid})`,
-              );
-
+            if (success)
               await i.update({
                 content: `Deleted "${escapeMarkdown(targetMedia.name)}"${formatIndex(targetMedia.index)}`,
                 files: [],
                 components: [],
               });
-            } else
+            else
               await i.update({
                 content: 'Failed to delete media!',
                 files: [],

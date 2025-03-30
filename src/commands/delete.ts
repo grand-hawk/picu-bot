@@ -1,5 +1,3 @@
-import { rm } from 'node:fs/promises';
-
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -10,10 +8,10 @@ import {
 import { COLLECTOR_TIMEOUT } from '@/constants';
 import { env } from '@/env';
 import { attachmentFromMedia } from '@/lib/attachmentFromMedia';
+import { deleteMedia } from '@/lib/deleteMedia';
 import { log } from '@/pino';
 import { prisma } from '@/services/database';
 import { formatIndex } from '@/utils//formatIndex';
-import { getPath } from '@/utils/getPath';
 import { validateFileName } from '@/utils/validateFileName';
 
 import type { MessageCommand } from '@/commands';
@@ -111,42 +109,23 @@ export const command: MessageCommand = {
           const targetMedia = media[mediaIndex];
           if (!targetMedia) return;
 
-          await prisma.media.update({
-            where: {
-              uuid: targetMedia.uuid,
-            },
-            data: {
-              downloaded: false,
-            },
-          });
-
-          try {
-            await rm(getPath(targetMedia.uuid));
-
-            await prisma.media.delete({
-              where: {
-                uuid: targetMedia.uuid,
-              },
-            });
+          const success = await deleteMedia(targetMedia);
+          if (success) {
+            log.info(
+              `Deleted media "${targetMedia.name}" (${targetMedia.uuid})`,
+            );
 
             await i.update({
               content: `Deleted "${targetMedia.name}"${formatIndex(targetMedia.index)}`,
               files: [],
               components: [],
             });
-
-            log.info(
-              `Deleted media "${targetMedia.name}" (${targetMedia.uuid})`,
-            );
-          } catch (err) {
-            log.error(err, `Failed to delete media "${targetMedia.uuid}"`);
-
+          } else
             await i.update({
               content: 'Failed to delete media!',
               files: [],
               components: [],
             });
-          }
 
           return;
         }

@@ -30,7 +30,7 @@ export const command: MessageCommand = {
       where: {
         name: searchOption
           ? {
-              search: searchOption,
+              contains: searchOption,
             }
           : fileName,
       },

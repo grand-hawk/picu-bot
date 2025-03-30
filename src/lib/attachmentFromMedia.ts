@@ -3,8 +3,8 @@ import { createReadStream } from 'node:fs';
 import { AttachmentBuilder } from 'discord.js';
 import mime from 'mime-types';
 
-import { safeStat } from '@/utils/safeStat';
 import { getPath } from '@/utils/getPath';
+import { safeStat } from '@/utils/safeStat';
 
 import type { Media } from '@prisma/client';
 

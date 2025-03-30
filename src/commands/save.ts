@@ -28,20 +28,43 @@ export const command: MessageCommand = {
 
     const targetMessage = (await getRepliedToMessage(message)) || message;
 
-    for (const attachment of targetMessage.attachments.values().take(1)) {
-      if (attachment.size > 1e7) continue;
+    let downloadURL: string | undefined;
 
-      const media = await saveMedia(
-        fileName,
-        message.author.id,
-        attachment.url,
+    if (!downloadURL)
+      for (const attachment of targetMessage.attachments.values()) {
+        if (attachment.size > 1e7) continue;
+
+        downloadURL = attachment.url;
+
+        break;
+      }
+
+    if (!downloadURL)
+      for (const embed of targetMessage.embeds) {
+        if (!embed.data) continue;
+        if (
+          embed.data.type !== 'video' &&
+          embed.data.type !== 'image' &&
+          embed.data.type !== 'gifv'
+        )
+          continue;
+
+        const mediaObject = embed.data.video || embed.data.thumbnail;
+        if (!mediaObject) continue;
+
+        downloadURL = mediaObject.proxy_url;
+
+        break;
+      }
+
+    if (!downloadURL) return message.reply('No media found!');
+
+    const media = await saveMedia(fileName, message.author.id, downloadURL);
+
+    if (media)
+      await message.reply(
+        `Saved as "${escapeMarkdown(media.name)}"${formatIndex(media.index)}`,
       );
-
-      if (media)
-        await message.reply(
-          `Saved as "${escapeMarkdown(media.name)}"${formatIndex(media.index)}`,
-        );
-      else await message.reply('There was an error saving the media!');
-    }
+    else await message.reply('There was an error saving the media!');
   },
 };

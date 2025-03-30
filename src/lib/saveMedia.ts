@@ -15,9 +15,9 @@ import { getPath } from '@/utils/getPath';
 export async function saveMedia(
   name: string,
   creatorId: string,
-  downloadUrl: string,
+  downloadURL: string,
 ) {
-  const response = await ky.get(downloadUrl, {
+  const response = await ky.get(downloadURL, {
     throwHttpErrors: false,
   });
 
@@ -27,13 +27,30 @@ export async function saveMedia(
     );
   if (!response.body) throw new Error('No response stream to save');
 
-  const contentType = response.headers.get('content-type');
-  if (!contentType) throw new Error('Response returned no content type header');
+  const contentTypeHeader = response.headers.get('content-type');
+  if (!contentTypeHeader)
+    throw new Error('Response returned no content type header');
+  if (
+    !(
+      contentTypeHeader.startsWith('image/') ||
+      contentTypeHeader.startsWith('video/')
+    )
+  )
+    throw new Error('Content type is not an image or video');
+
+  const contentLengthHeader = response.headers.get('content-length');
+  if (!contentLengthHeader)
+    throw new Error('Response returned no content length header');
+
+  const contentLength = parseInt(contentLengthHeader, 10);
+  if (Number.isNaN(contentLength))
+    throw new Error('Response returned invalid content length header');
+  if (contentLength > 1e7) throw new Error('Response is larger than 10MB');
 
   const media = await prisma.media.create({
     data: {
       name,
-      contentType,
+      contentType: contentTypeHeader,
       createdBy: creatorId,
     },
   });

@@ -102,7 +102,7 @@ export const command: MessageCommand = {
 
     const response = await message.reply(await getOptionsForCurrentMedia());
 
-    if (media.length > 1) {
+    if (media.length > 1 || allowDeletion) {
       const collector = response.createMessageComponentCollector({
         filter: (i) => i.user.id === message.author.id,
         componentType: ComponentType.Button,
@@ -127,10 +127,10 @@ export const command: MessageCommand = {
           }
 
           case `${message.id}-delete`: {
-            if (!allowDeletion) return console.log(1);
+            if (!allowDeletion) return;
 
             const targetMedia = media[mediaIndex];
-            if (!targetMedia) return console.log(1);
+            if (!targetMedia) return;
 
             const success = await deleteMedia(targetMedia);
             if (success) {

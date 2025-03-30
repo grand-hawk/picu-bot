@@ -9,7 +9,7 @@ import type { MessageCommand } from '@/commands';
 
 export const command: MessageCommand = {
   command: 'import',
-  description: 'Import media from folder',
+  description: 'Import media from folder (Restricted)',
   async handleCommand(message, args) {
     if (!env.ADMIN_USERS.some((userId) => message.author.id === userId))
       return message.reply(

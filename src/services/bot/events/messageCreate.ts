@@ -32,6 +32,7 @@ export const handleEvent: (
   if (message.author.bot) return;
   if (!message.inGuild()) return;
   if (!message.content) return;
+  if (!message.content.startsWith(env.COMMAND_PREFIX)) return;
 
   const args = message.content
     .slice(env.COMMAND_PREFIX.length)
@@ -54,8 +55,7 @@ export const handleEvent: (
   log.info(`Command "${command.command}" ran by ${message.author.id}`);
 
   try {
-    if (message.author.id === '449250687868469258')
-      await command.handleCommand(message, args, commands, {});
+    await command.handleCommand(message, args, commands, {});
   } catch (err) {
     log.error(err, `Error handling command "${commandName}"`);
   }

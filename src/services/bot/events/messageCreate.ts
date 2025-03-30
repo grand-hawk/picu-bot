@@ -54,7 +54,7 @@ export const handleEvent: (
   log.info(`Command "${command.command}" ran by ${message.author.id}`);
 
   try {
-    await command.handleCommand(message, args);
+    await command.handleCommand(message, args, commands);
   } catch (err) {
     log.error(err, `Error handling command "${commandName}"`);
   }

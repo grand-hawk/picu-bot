@@ -1,7 +1,6 @@
 import { EmbedBuilder, escapeMarkdown } from 'discord.js';
 
 import { env } from '@/env';
-import { commands } from '@/services/bot/events/messageCreate';
 
 import type { MessageCommand } from '@/commands';
 import type { APIEmbedField } from 'discord.js';
@@ -10,7 +9,7 @@ export const command: MessageCommand = {
   command: 'help',
   aliases: ['cmds'],
   description: 'Help',
-  async handleCommand(message) {
+  async handleCommand(message, _args, commands) {
     const fields: APIEmbedField[] = [];
 
     for (const [, commandModule] of commands)

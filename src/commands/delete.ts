@@ -37,6 +37,7 @@ export const command: MessageCommand = {
     const media = await prisma.media.findMany({
       where: {
         name: fileName,
+        downloaded: true,
       },
     });
     if (!media.length) return message.reply('No media found!');

@@ -36,6 +36,7 @@ export const command: MessageCommand = {
               contains: searchValue,
             }
           : fileName,
+        downloaded: true,
       },
     });
     if (!media.length) return message.reply('No media found!');

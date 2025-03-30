@@ -55,8 +55,10 @@ export const command: MessageCommand = {
       const attachment = await attachmentFromMedia(targetMedia);
       if (!attachment) return { content: 'Could not get media!' };
 
+      const indexString = formatIndex(mediaIndex + 1, media.length > 1);
+
       return {
-        content: `${targetMedia.name}${formatIndex(mediaIndex + 1, media.length > 1)}`,
+        content: indexString ? `${targetMedia.name}${indexString}` : undefined,
         files: [attachment],
         components: media.length > 1 ? [getRow()] : undefined,
       };

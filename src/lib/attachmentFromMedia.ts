@@ -16,6 +16,6 @@ export async function attachmentFromMedia(media: Media) {
 
   const readStream = createReadStream(mediaPath, { flags: 'r' });
   return new AttachmentBuilder(readStream).setName(
-    `${media.name}.${mime.extension(media.contentType)}`,
+    `${media.name.replace(/[^a-zA-Z0-9]/g, '_')}.${mime.extension(media.contentType)}`,
   );
 }

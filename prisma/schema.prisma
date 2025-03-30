@@ -16,6 +16,7 @@ datasource db {
 
 model Media {
   uuid        String   @id @default(uuid())
+  index       Int      @default(autoincrement())
   name        String
   contentType String
   downloaded  Boolean  @default(false)

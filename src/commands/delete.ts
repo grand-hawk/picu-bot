@@ -7,6 +7,7 @@ import {
   ComponentType,
 } from 'discord.js';
 
+import { COLLECTOR_TIMEOUT } from '@/constants';
 import { env } from '@/env';
 import { attachmentFromMedia } from '@/lib/attachmentFromMedia';
 import { log } from '@/pino';
@@ -86,7 +87,7 @@ export const command: MessageCommand = {
       const collector = response.createMessageComponentCollector({
         filter: (i) => i.user.id === message.author.id,
         componentType: ComponentType.Button,
-        time: 10 * 60 * 1_000,
+        time: COLLECTOR_TIMEOUT,
       });
 
       collector.on('collect', async (i) => {

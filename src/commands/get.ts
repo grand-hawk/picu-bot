@@ -31,7 +31,7 @@ export const command: MessageCommand = {
       searchValue: string | undefined;
     };
     // authenticated in the delete command
-    const allowDeletion = options.delete as boolean | undefined;
+    const allowDeletion = options.allowDeletion as boolean | undefined;
 
     let media = await prisma.media.findMany({
       where: {
@@ -127,10 +127,10 @@ export const command: MessageCommand = {
           }
 
           case `${message.id}-delete`: {
-            if (!allowDeletion) return;
+            if (!allowDeletion) return console.log(1);
 
             const targetMedia = media[mediaIndex];
-            if (!targetMedia) return;
+            if (!targetMedia) return console.log(1);
 
             const success = await deleteMedia(targetMedia);
             if (success) {

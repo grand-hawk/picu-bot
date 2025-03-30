@@ -16,7 +16,7 @@ export const command: MessageCommand = {
       );
 
     await commands.get('get')!.handleCommand(message, args, commands, {
-      delete: true,
+      allowDeletion: true,
     });
   },
 };

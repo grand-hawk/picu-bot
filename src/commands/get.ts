@@ -11,6 +11,7 @@ import { formatIndex } from '@/utils//formatIndex';
 import { validateFileName } from '@/utils/validateFileName';
 
 import type { MessageCommand } from '@/commands';
+import type { InteractionUpdateOptions } from 'discord.js';
 
 export const command: MessageCommand = {
   command: 'get',
@@ -19,6 +20,8 @@ export const command: MessageCommand = {
     const fileName: string | undefined = args[0];
     if (fileName && !validateFileName(fileName))
       return message.reply('Media name contains invalid characters!');
+
+    const displayInfo = args[args.length - 1] === '+info';
 
     let media = await prisma.media.findMany({
       where: {
@@ -50,16 +53,26 @@ export const command: MessageCommand = {
 
     const getOptionsForCurrentMedia = async () => {
       const targetMedia = media[mediaIndex];
-      if (!targetMedia) return { content: 'Error!' };
+      if (!targetMedia)
+        return { content: 'Error!' } satisfies InteractionUpdateOptions;
 
       const attachment = await attachmentFromMedia(targetMedia);
-      if (!attachment) return { content: 'Could not get media!' };
+      if (!attachment)
+        return {
+          content: 'Could not get media!',
+        } satisfies InteractionUpdateOptions;
 
       return {
-        content: `${targetMedia.name}${formatIndex(mediaIndex + 1)}`,
+        content: `${targetMedia.name}${formatIndex(mediaIndex + 1)}${
+          displayInfo
+            ? `\nCreated by: <@${targetMedia.createdBy}>` +
+              `\nCreated at: <t:${Math.floor(targetMedia.createdAt.getTime() / 1_000)}:F>` +
+              `\nContent type: ${targetMedia.contentType}`
+            : ''
+        }`,
         files: [attachment],
         components: media.length > 1 ? [getRow()] : undefined,
-      };
+      } satisfies InteractionUpdateOptions;
     };
 
     const response = await message.reply(await getOptionsForCurrentMedia());

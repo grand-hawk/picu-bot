@@ -64,7 +64,7 @@ export const handleEvent: (
 
     if (!parseResult.success)
       return message.reply(
-        'Invalid arguments:' +
+        'Invalid argument(s):' +
           `\n${parseResult.error.issues
             .map((issue) => issue.message)
             .join('\n')}`,

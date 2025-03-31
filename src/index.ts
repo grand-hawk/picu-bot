@@ -1,2 +1,2 @@
-import '@/services//server';
-import '@/services//bot';
+import '@/services/server';
+import '@/services/bot';

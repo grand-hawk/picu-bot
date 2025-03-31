@@ -14,14 +14,23 @@ export const command = createCommand({
   aliases: ['s'],
   description: 'Save media',
   args: z.object({
-    _: z.tuple([
-      z
-        .string()
-        .regex(MEDIA_NAME_REGEX, {
-          message: 'Media name contains invalid characters',
-        })
-        .describe('Media name'),
-    ]),
+    _: z.tuple(
+      [
+        z
+          .string()
+          .regex(MEDIA_NAME_REGEX, {
+            message: 'Media name contains invalid characters',
+          })
+          .describe('Media name'),
+      ],
+      {
+        errorMap: (issue, ctx) => {
+          if (issue.code === z.ZodIssueCode.too_small)
+            return { message: 'Missing media name' };
+          return { message: ctx.defaultError };
+        },
+      },
+    ),
   }),
   async handleCommand(message, args) {
     const { member } = message;

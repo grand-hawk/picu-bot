@@ -25,18 +25,23 @@ export const command = createCommand({
   args: z.object({
     _: tupleWithOptional([
       z
-        .string()
-        .regex(MEDIA_NAME_REGEX, {
-          message: 'Media name contains invalid characters',
-        })
+        .union([
+          z.string().regex(MEDIA_NAME_REGEX, {
+            message: 'Media name contains invalid characters',
+          }),
+          z.number(),
+        ])
         .optional()
         .describe('Media name'),
     ]).default([undefined]),
     info: z.boolean().default(false).describe('Show media info'),
   }),
   async handleCommand(message, args, _commands, options) {
-    const fileName: string | undefined = args._[0];
-    const searchIndex = fileName ? Number(fileName) : undefined;
+    const fileName: string | undefined = args._[0]
+      ? String(args._[0])
+      : undefined;
+    const fileIndex: number | undefined =
+      typeof args._[0] === 'number' ? args._[0] : undefined;
     const shouldDisplayInfo = args.info;
 
     const { search, searchValue } = options as {
@@ -65,13 +70,13 @@ export const command = createCommand({
         mode: 'insensitive',
       } satisfies Prisma.StringFilter<'Media'>;
 
-    if (searchIndex && !Number.isNaN(searchIndex))
+    if (fileIndex && !Number.isNaN(fileIndex))
       query.where = {
         ...query.where,
         OR: [
           nameQuery,
           {
-            index: searchIndex,
+            index: fileIndex,
           },
         ],
       };

@@ -43,8 +43,16 @@ export const command: MessageCommand = {
 
     const nameQuery: Prisma.MediaWhereInput = {};
     if (search) {
-      if (searchValue) nameQuery.name = { contains: searchValue };
-    } else nameQuery.name = fileName;
+      if (searchValue)
+        nameQuery.name = {
+          contains: searchValue,
+          mode: 'insensitive',
+        } satisfies Prisma.StringFilter<'Media'>;
+    } else
+      nameQuery.name = {
+        equals: fileName,
+        mode: 'insensitive',
+      } satisfies Prisma.StringFilter<'Media'>;
 
     if (searchIndex && !Number.isNaN(searchIndex))
       query.where = {
@@ -113,7 +121,7 @@ export const command: MessageCommand = {
         } satisfies InteractionUpdateOptions;
 
       return {
-        content: `${escapeMarkdown(targetMedia.name)}${formatIndex(targetMedia.index)}${
+        content: `${escapeMarkdown(targetMedia.name.toLowerCase())}${formatIndex(targetMedia.index)}${
           shouldDisplayInfo
             ? '\n\n**Info**' +
               `\nCreated by: ${targetMedia.createdBy ? `<@${targetMedia.createdBy}>` : 'Unknown'}` +
@@ -165,7 +173,7 @@ export const command: MessageCommand = {
             const success = await deleteMedia(targetMedia);
             if (success)
               await i.update({
-                content: `Deleted "${escapeMarkdown(targetMedia.name)}"${formatIndex(targetMedia.index)}`,
+                content: `Deleted "${escapeMarkdown(targetMedia.name.toLowerCase())}"${formatIndex(targetMedia.index)}`,
                 files: [],
                 components: [],
               });

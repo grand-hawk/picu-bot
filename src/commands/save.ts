@@ -61,7 +61,7 @@ export const command: MessageCommand = {
     if (!downloadURL) return message.reply('No valid media found!');
 
     const media = await saveMedia(
-      fileName,
+      fileName.toLowerCase(),
       message.author.id,
       downloadURL,
       maxSize,
@@ -69,6 +69,7 @@ export const command: MessageCommand = {
 
     if (media)
       await message.reply(
+        // lower case was done in saveMedia
         `Saved as "${escapeMarkdown(media.name)}"${formatIndex(media.index)}`,
       );
     else await message.reply('There was an error saving the media!');

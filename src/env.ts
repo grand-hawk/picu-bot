@@ -11,7 +11,6 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(['development', 'test', 'production'])
       .default('development'),
-    SOURCE_COMMIT: z.string().optional(),
 
     PORT: z
       .string()

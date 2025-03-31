@@ -1,15 +1,34 @@
-import type { MessageCommand } from '@/commands';
+import { z } from 'zod';
+import { tupleWithOptional } from 'zod-tuple-with-optional';
 
-export const command: MessageCommand = {
+import { createCommand } from '@/commands';
+import { command as getCommand } from '@/commands/get';
+import { MEDIA_NAME_REGEX } from '@/constants';
+
+export const command = createCommand({
   command: 'search',
   aliases: ['find'],
   description: 'Search media',
+  args: z.object({
+    _: tupleWithOptional([
+      z
+        .string()
+        .regex(MEDIA_NAME_REGEX, {
+          message: 'Search value contains invalid characters',
+        })
+        .optional()
+        .describe('Search value'),
+    ]).default([undefined]),
+  }),
   async handleCommand(message, args, commands) {
-    const searchValue: string | undefined = args[0];
-
-    await commands.get('get')!.handleCommand(message, [], commands, {
-      search: true,
-      searchValue,
-    });
+    await getCommand.handleCommand(
+      message,
+      getCommand.args!.parse({}),
+      commands,
+      {
+        search: true,
+        searchValue: args._[0],
+      },
+    );
   },
-};
+});

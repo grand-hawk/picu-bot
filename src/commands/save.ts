@@ -1,32 +1,36 @@
 import { escapeMarkdown } from 'discord.js';
+import { z } from 'zod';
 
+import { createCommand } from '@/commands';
+import { MEDIA_NAME_REGEX } from '@/constants';
 import { env } from '@/env';
 import { saveMedia } from '@/lib/saveMedia';
 import { formatIndex } from '@/utils/formatIndex';
 import { getRepliedToMessage } from '@/utils/getRepliedToMessage';
 import { maxUploadSizeFromTier } from '@/utils/maxUploadSizeFromTier';
-import { validateFileName } from '@/utils/validateFileName';
 
-import type { MessageCommand } from '@/commands';
-
-export const command: MessageCommand = {
+export const command = createCommand({
   command: 'save',
   aliases: ['s'],
-  description: 'Save media (Restricted)',
+  description: 'Save media',
+  args: z.object({
+    _: z.tuple([
+      z
+        .string()
+        .regex(MEDIA_NAME_REGEX, {
+          message: 'Media name contains invalid characters',
+        })
+        .describe('Media name'),
+    ]),
+  }),
   async handleCommand(message, args) {
     const { member } = message;
     if (!member) return;
 
     if (!env.SAVE_ROLES.some((roleId) => member.roles.cache.get(roleId)))
-      return message.reply(
-        `You do not have permission to use ${env.COMMAND_PREFIX}${command.command}!`,
-      );
+      return message.reply(`You do not have permission to use this command!`);
 
-    const fileName = args[0];
-    if (!fileName) return message.reply('Please provide a media name!');
-    if (!validateFileName(fileName))
-      return message.reply('Media name contains invalid characters!');
-
+    const fileName = args._[0];
     const targetMessage = (await getRepliedToMessage(message)) || message;
     const maxSize = maxUploadSizeFromTier(targetMessage.guild.premiumTier);
     let downloadURL: string | undefined;
@@ -74,4 +78,4 @@ export const command: MessageCommand = {
       );
     else await message.reply('There was an error saving the media!');
   },
-};
+});

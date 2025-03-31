@@ -1,7 +1,9 @@
 import path from 'node:path';
 
 import klaw from 'klaw';
+import minimist from 'minimist';
 
+import { defaultArgsSchema } from '@/commands';
 import { env } from '@/env';
 import { log } from '@/pino';
 import { importPath } from '@/utils/importPath';
@@ -55,7 +57,20 @@ export const handleEvent: (
   log.info(`Command "${command.command}" ran by ${message.author.id}`);
 
   try {
-    await command.handleCommand(message, args, commands, {});
+    const parsedArgs = minimist(args, {});
+    const parseResult = (command.args ?? defaultArgsSchema).safeParse(
+      parsedArgs,
+    );
+
+    if (!parseResult.success)
+      return message.reply(
+        'Invalid arguments:' +
+          `\n${parseResult.error.issues
+            .map((issue) => issue.message)
+            .join('\n')}`,
+      );
+
+    await command.handleCommand(message, parseResult.data, commands, {});
   } catch (err) {
     log.error(err, `Error handling command "${commandName}"`);
   }

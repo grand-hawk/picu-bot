@@ -5,29 +5,40 @@ import {
   ComponentType,
   escapeMarkdown,
 } from 'discord.js';
+import { z } from 'zod';
+import { tupleWithOptional } from 'zod-tuple-with-optional';
 
-import { COLLECTOR_TIMEOUT } from '@/constants';
+import { createCommand } from '@/commands';
+import { COLLECTOR_IDLE_TIMEOUT, MEDIA_NAME_REGEX } from '@/constants';
 import { attachmentFromMedia } from '@/lib/attachmentFromMedia';
 import { deleteMedia } from '@/lib/deleteMedia';
 import { prisma } from '@/services/database';
 import { formatIndex } from '@/utils/formatIndex';
-import { validateFileName } from '@/utils/validateFileName';
 
-import type { MessageCommand } from '@/commands';
 import type { Prisma } from '@prisma/client';
 import type { InteractionUpdateOptions } from 'discord.js';
 
-export const command: MessageCommand = {
+export const command = createCommand({
   command: 'get',
   aliases: ['i', 'img', 'image'],
   description: 'Get media',
+  args: z.object({
+    _: tupleWithOptional([
+      z
+        .string()
+        .regex(MEDIA_NAME_REGEX, {
+          message: 'Media name contains invalid characters',
+        })
+        .optional()
+        .describe('Media name'),
+    ]).default([undefined]),
+    info: z.boolean().default(false).describe('Show media info'),
+  }),
   async handleCommand(message, args, _commands, options) {
-    const fileName: string | undefined = args[0];
-    if (fileName && !validateFileName(fileName))
-      return message.reply('Media name contains invalid characters!');
+    const fileName: string | undefined = args._[0];
     const searchIndex = fileName ? Number(fileName) : undefined;
+    const shouldDisplayInfo = args.info;
 
-    const shouldDisplayInfo = args[1] === '+info';
     const { search, searchValue } = options as {
       search: boolean | undefined;
       searchValue: string | undefined;
@@ -144,7 +155,7 @@ export const command: MessageCommand = {
       const collector = response.createMessageComponentCollector({
         filter: (i) => i.user.id === message.author.id,
         componentType: ComponentType.Button,
-        time: COLLECTOR_TIMEOUT,
+        time: COLLECTOR_IDLE_TIMEOUT,
       });
 
       collector.on('collect', async (i) => {
@@ -192,4 +203,4 @@ export const command: MessageCommand = {
       });
     }
   },
-};
+});

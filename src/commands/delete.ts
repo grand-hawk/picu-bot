@@ -1,22 +1,21 @@
+import { createCommand } from '@/commands';
+import { command as getCommand } from '@/commands/get';
 import { env } from '@/env';
 
-import type { MessageCommand } from '@/commands';
-
-export const command: MessageCommand = {
+export const command = createCommand({
   command: 'delete',
   aliases: ['d', 'del'],
-  description: 'Delete media (Restricted)',
+  description: 'Delete media',
+  args: getCommand.args,
   async handleCommand(message, args, commands) {
     const { member } = message;
     if (!member) return;
 
     if (!env.DELETE_ROLES.some((roleId) => member.roles.cache.get(roleId)))
-      return message.reply(
-        `You do not have permission to use ${env.COMMAND_PREFIX}${command.command}!`,
-      );
+      return message.reply(`You do not have permission to use this command!`);
 
-    await commands.get('get')!.handleCommand(message, args, commands, {
+    await getCommand.handleCommand(message, args, commands, {
       allowDeletion: true,
     });
   },
-};
+});

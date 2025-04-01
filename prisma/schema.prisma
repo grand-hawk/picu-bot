@@ -5,8 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider        = "prisma-client-js"
-  binaryTargets   = ["native", "linux-musl", "linux-musl-openssl-3.0.x"]
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -15,11 +15,12 @@ datasource db {
 }
 
 model Media {
-  uuid        String   @id @default(uuid())
-  index       Int      @default(autoincrement())
-  name        String
-  contentType String
-  downloaded  Boolean  @default(false)
-  createdBy   String?
-  createdAt   DateTime @default(now())
+  uuid         String   @id @default(uuid())
+  index        Int      @default(autoincrement())
+  name         String
+  contentType  String
+  downloaded   Boolean  @default(false)
+  displayCount Int      @default(0)
+  createdBy    String?
+  createdAt    DateTime @default(now())
 }

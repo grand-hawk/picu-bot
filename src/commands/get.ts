@@ -89,8 +89,23 @@ export const command = createCommand({
 
     let media = await prisma.media.findMany(query);
     if (!media.length) return message.reply('No media found!');
-    if (!fileName && !search)
-      media = [media[Math.floor(Math.random() * media.length)]];
+    if (!fileName && !search) {
+      const weights = media.map((m) => 1 / (m.displayCount + 1));
+      const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+      const randomValue = Math.random() * totalWeight;
+
+      let cumulativeWeight = 0;
+      let selectedMedia = media[0];
+      for (let i = 0; i < media.length; i += 1) {
+        cumulativeWeight += weights[i];
+        if (randomValue < cumulativeWeight) {
+          selectedMedia = media[i];
+          break;
+        }
+      }
+
+      media = [selectedMedia];
+    }
 
     let mediaIndex = 0;
     const displayCountIncrementedMedia = new Map<Media['uuid'], boolean>();

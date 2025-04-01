@@ -10,8 +10,8 @@ import { tupleWithOptional } from 'zod-tuple-with-optional';
 
 import { createCommand } from '@/commands';
 import { COLLECTOR_IDLE_TIMEOUT, MEDIA_NAME_REGEX } from '@/constants';
-import { attachmentFromMedia } from '@/lib/attachmentFromMedia';
 import { deleteMedia } from '@/lib/deleteMedia';
+import { prepareMediaFile } from '@/lib/prepareMediaFile';
 import { log } from '@/pino';
 import { prisma } from '@/services/database';
 import { formatIndex } from '@/utils/formatIndex';
@@ -145,8 +145,8 @@ export const command = createCommand({
           ...baseOptions,
         } satisfies InteractionUpdateOptions;
 
-      const attachment = await attachmentFromMedia(targetMedia);
-      if (!attachment)
+      const mediaFile = await prepareMediaFile(targetMedia);
+      if (!mediaFile)
         return {
           content: 'Could not get media!',
           files: [],
@@ -181,13 +181,14 @@ export const command = createCommand({
         content: `${escapeMarkdown(targetMedia.name.toLowerCase())}${formatIndex(targetMedia.index)}${
           shouldDisplayInfo
             ? '\n\n**Info**' +
-              `\nCreated by: ${targetMedia.createdBy ? `<@${targetMedia.createdBy}>` : 'Unknown'}` +
-              `\nCreated at: <t:${Math.floor(targetMedia.createdAt.getTime() / 1_000)}:F>` +
+              `\nDisplay count: ${(targetMedia.displayCount + 1).toLocaleString()}` +
+              `\nSize: ${(mediaFile.stat.size / 1024 / 1024).toLocaleString()} MB` +
               `\nContent type: \`${targetMedia.contentType}\`` +
-              `\nDisplay count: ${targetMedia.displayCount + 1}`
+              `\nCreated by: ${targetMedia.createdBy ? `<@${targetMedia.createdBy}>` : 'Unknown'}` +
+              `\nCreated at: <t:${Math.floor(targetMedia.createdAt.getTime() / 1_000)}:F>`
             : ''
         }`,
-        files: [attachment],
+        files: [mediaFile.attachment],
         allowedMentions: {
           repliedUser: true,
           users: [message.author.id],

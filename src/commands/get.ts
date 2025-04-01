@@ -169,7 +169,7 @@ export const command = createCommand({
               `\nCreated by: ${targetMedia.createdBy ? `<@${targetMedia.createdBy}>` : 'Unknown'}` +
               `\nCreated at: <t:${Math.floor(targetMedia.createdAt.getTime() / 1_000)}:F>` +
               `\nContent type: \`${targetMedia.contentType}\`` +
-              `\nDisplay count: \`${targetMedia.displayCount + 1}\``
+              `\nDisplay count: ${targetMedia.displayCount + 1}`
             : ''
         }`,
         files: [attachment],

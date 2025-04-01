@@ -12,10 +12,11 @@ import { createCommand } from '@/commands';
 import { COLLECTOR_IDLE_TIMEOUT, MEDIA_NAME_REGEX } from '@/constants';
 import { attachmentFromMedia } from '@/lib/attachmentFromMedia';
 import { deleteMedia } from '@/lib/deleteMedia';
+import { log } from '@/pino';
 import { prisma } from '@/services/database';
 import { formatIndex } from '@/utils/formatIndex';
 
-import type { Prisma } from '@prisma/client';
+import type { Media, Prisma } from '@prisma/client';
 import type { InteractionUpdateOptions } from 'discord.js';
 
 export const command = createCommand({
@@ -92,6 +93,7 @@ export const command = createCommand({
       media = [media[Math.floor(Math.random() * media.length)]];
 
     let mediaIndex = 0;
+    const displayCountIncrementedMedia = new Map<Media['uuid'], boolean>();
 
     const getRow = () => {
       const previous = new ButtonBuilder()
@@ -136,13 +138,38 @@ export const command = createCommand({
           ...baseOptions,
         } satisfies InteractionUpdateOptions;
 
+      if (!displayCountIncrementedMedia.get(targetMedia.uuid)) {
+        displayCountIncrementedMedia.set(targetMedia.uuid, true);
+
+        prisma.media
+          .update({
+            where: {
+              uuid: targetMedia.uuid,
+            },
+            data: {
+              displayCount: {
+                increment: 1,
+              },
+            },
+          })
+          .catch((err) => {
+            log.warn(
+              err,
+              `Failed to increment display count for ${targetMedia.uuid}`,
+            );
+
+            displayCountIncrementedMedia.delete(targetMedia.uuid);
+          });
+      }
+
       return {
         content: `${escapeMarkdown(targetMedia.name.toLowerCase())}${formatIndex(targetMedia.index)}${
           shouldDisplayInfo
             ? '\n\n**Info**' +
               `\nCreated by: ${targetMedia.createdBy ? `<@${targetMedia.createdBy}>` : 'Unknown'}` +
               `\nCreated at: <t:${Math.floor(targetMedia.createdAt.getTime() / 1_000)}:F>` +
-              `\nContent type: \`${targetMedia.contentType}\``
+              `\nContent type: \`${targetMedia.contentType}\`` +
+              `\nDisplay count: \`${targetMedia.displayCount + 1}\``
             : ''
         }`,
         files: [attachment],

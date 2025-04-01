@@ -7,7 +7,7 @@ import { MEDIA_NAME_REGEX } from '@/constants';
 
 export const command = createCommand({
   command: 'search',
-  aliases: ['find'],
+  aliases: ['find', 'f'],
   description: 'Search media',
   args: z.object({
     _: tupleWithOptional([

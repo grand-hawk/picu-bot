@@ -18,7 +18,7 @@ ARG SKIP_MIGRATE
 ENV SKIP_MIGRATE=$SKIP_MIGRATE
 
 RUN pnpm prisma generate
-RUN [ "$SKIP_MIGRATE" != "true" ] && pnpm prisma migrate deploy
+RUN [ "$SKIP_MIGRATE" != "true" ] && pnpm prisma migrate deploy || echo "Skipping migration"
 
 RUN pnpm run build
 

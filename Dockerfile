@@ -27,7 +27,7 @@ RUN pnpm prune --prod
 # Package layer
 FROM node:22-alpine AS package
 
-RUN apk --no-cache add curl file
+RUN apk --no-cache add curl file ffmpeg
 
 WORKDIR /bot
 

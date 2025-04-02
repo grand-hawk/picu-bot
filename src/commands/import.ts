@@ -1,3 +1,4 @@
+import { platform } from 'node:os';
 import path from 'node:path';
 
 import { z } from 'zod';
@@ -23,6 +24,8 @@ export const command = createCommand({
   async handleCommand(message, args) {
     if (!env.ADMIN_USERS.some((userId) => message.author.id === userId))
       return message.reply(`You do not have permission to use this command!`);
+    if (platform() === 'win32')
+      return message.reply('The import command is not supported on Windows!');
 
     const folderPath = args._[0];
     const resolvedPath = path.resolve(folderPath);

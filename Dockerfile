@@ -16,7 +16,7 @@ ARG DATABASE_URL
 ENV DATABASE_URL=$DATABASE_URL
 
 RUN pnpm prisma generate
-RUN pnpm prisma migrate deploy
+RUN [ "$SKIP_MIGRATE" != "true" ] && pnpm prisma migrate deploy
 
 RUN pnpm run build
 

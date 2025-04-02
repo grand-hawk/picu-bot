@@ -14,6 +14,8 @@ RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install
 
 ARG DATABASE_URL
 ENV DATABASE_URL=$DATABASE_URL
+ARG SKIP_MIGRATE
+ENV SKIP_MIGRATE=$SKIP_MIGRATE
 
 RUN pnpm prisma generate
 RUN [ "$SKIP_MIGRATE" != "true" ] && pnpm prisma migrate deploy

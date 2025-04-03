@@ -1,11 +1,12 @@
 import { createWriteStream } from 'node:fs';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, rename, rm } from 'node:fs/promises';
 import { Readable } from 'node:stream';
 import { finished } from 'node:stream/promises';
 
 import ky from 'ky';
 
 import { env } from '@/env';
+import { extractFrame, getUniqueFrameCount } from '@/lib/saveMedia/gifFrames';
 import { log } from '@/pino';
 import { prisma } from '@/services/database';
 import { formatIndex } from '@/utils/formatIndex';
@@ -66,6 +67,37 @@ export async function saveMedia(
     const writeStream = createWriteStream(getPath(media.uuid), { flags: 'wx' });
     const downloadPipe = Readable.fromWeb(response.body).pipe(writeStream);
     await finished(downloadPipe);
+
+    if (contentTypeHeader === 'image/gif') {
+      const uniqueFramesCount = await getUniqueFrameCount(
+        getPath(media.uuid),
+      ).catch((err) => {
+        log.warn(err, 'Failed to get unique frame count from gif');
+        return null;
+      });
+
+      if (uniqueFramesCount === 1) {
+        const framePath = `${getPath(media.uuid)}.png`;
+        const success = await extractFrame(
+          getPath(media.uuid),
+          framePath,
+        ).catch(() => false);
+
+        if (success) {
+          await rm(getPath(media.uuid));
+          await rename(framePath, getPath(media.uuid));
+
+          await prisma.media.update({
+            where: {
+              uuid: media.uuid,
+            },
+            data: {
+              contentType: 'image/png',
+            },
+          });
+        } else await rm(framePath);
+      }
+    }
 
     const updatedMedia = await prisma.media.update({
       where: {

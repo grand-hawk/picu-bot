@@ -113,23 +113,29 @@ export const command = createCommand({
     const getRow = () => {
       const previous = new ButtonBuilder()
         .setCustomId(`${message.id}-previous`)
-        .setLabel('Previous')
+        .setLabel(`(${mediaIndex}) Previous`)
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(mediaIndex === 0);
       const next = new ButtonBuilder()
         .setCustomId(`${message.id}-next`)
-        .setLabel('Next')
+        .setLabel(`Next (${media.length - mediaIndex - 1})`)
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(mediaIndex === media.length - 1);
-      const deleteButton = new ButtonBuilder()
-        .setCustomId(`${message.id}-delete`)
-        .setLabel('Delete')
-        .setStyle(ButtonStyle.Danger);
 
-      const components: ButtonBuilder[] = [previous, next];
-      if (allowDeletion) components.push(deleteButton);
+      const baseComponents: ButtonBuilder[] = [previous, next];
 
-      return new ActionRowBuilder<ButtonBuilder>().addComponents(components);
+      if (allowDeletion) {
+        const deleteButton = new ButtonBuilder()
+          .setCustomId(`${message.id}-delete`)
+          .setLabel('Delete')
+          .setStyle(ButtonStyle.Danger);
+
+        baseComponents.push(deleteButton);
+      }
+
+      return new ActionRowBuilder<ButtonBuilder>().addComponents(
+        baseComponents,
+      );
     };
 
     const getOptionsForCurrentMedia = async () => {

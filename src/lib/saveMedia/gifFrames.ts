@@ -46,9 +46,7 @@ export async function getUniqueFrameCount(inputGif: string) {
             const relativePath = path.join('.tmp/gif', fileName);
             const result = spawnSync('md5sum', [relativePath]);
 
-            if (result.error) {
-              throw result.error;
-            }
+            if (result.error) throw result.error;
 
             const stdout = result.stdout.toString();
             return stdout.split(' ')[0];

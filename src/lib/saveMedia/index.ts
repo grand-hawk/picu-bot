@@ -95,7 +95,7 @@ export async function saveMedia(
               contentType: 'image/png',
             },
           });
-        } else await rm(framePath);
+        }
       }
     }
 

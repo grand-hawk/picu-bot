@@ -15,7 +15,8 @@ export const env = createEnv({
     PORT: z
       .string()
       .default('3000')
-      .transform((v) => parseInt(v, 10)),
+      .transform((v) => parseInt(v, 10))
+      .pipe(z.number()),
     DISCORD_TOKEN: z.string(),
 
     DATABASE_URL: z.string().url(),

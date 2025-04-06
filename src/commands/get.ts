@@ -35,7 +35,8 @@ export const command = createCommand({
         .optional()
         .describe('Media name'),
     ]).default([undefined]),
-    info: z.boolean().default(false).describe('Show media info'),
+    i: z.boolean().default(false).describe('Show media info'),
+    n: z.boolean().default(false).describe('Show newest media first'),
   }),
   async handleCommand(message, args, _commands, options) {
     const fileName: string | undefined = args._[0]
@@ -43,7 +44,8 @@ export const command = createCommand({
       : undefined;
     const fileIndex: number | undefined =
       typeof args._[0] === 'number' ? args._[0] : undefined;
-    const shouldDisplayInfo = args.info;
+    const shouldDisplayInfo = args.i;
+    const shouldSortNewestFirst = args.n;
 
     const { search, searchValue } = options as {
       search: boolean | undefined;
@@ -106,6 +108,9 @@ export const command = createCommand({
 
       media = [selectedMedia];
     }
+
+    if (shouldSortNewestFirst)
+      media.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
     let mediaIndex = 0;
     const displayCountIncrementedMedia = new Map<Media['uuid'], boolean>();

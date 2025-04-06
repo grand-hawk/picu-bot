@@ -23,29 +23,35 @@ export const command = createCommand({
   command: 'get',
   aliases: ['i', 'img', 'image'],
   description: 'Get media',
-  args: z.object({
-    _: tupleWithOptional([
-      z
-        .union([
-          z.string().regex(MEDIA_NAME_REGEX, {
-            message: 'Media name contains invalid characters',
-          }),
-          z.number(),
-        ])
-        .optional()
-        .describe('Media name'),
-    ]).default([undefined]),
-    i: z.boolean().default(false).describe('Show media info'),
-    n: z.boolean().default(false).describe('Show newest media first'),
-  }),
+  args: {
+    schema: z.object({
+      _: tupleWithOptional([
+        z
+          .union([
+            z.string().regex(MEDIA_NAME_REGEX, {
+              message: 'Media name contains invalid characters',
+            }),
+            z.number(),
+          ])
+          .optional()
+          .describe('Media name'),
+      ]).default([undefined]),
+      info: z.boolean().default(false).describe('Show media info'),
+      newest: z.boolean().default(false).describe('Show newest media first'),
+    }),
+    alias: {
+      info: ['i'],
+      newest: ['n'],
+    },
+  },
   async handleCommand(message, args, _commands, options) {
     const fileName: string | undefined = args._[0]
       ? String(args._[0])
       : undefined;
     const fileIndex: number | undefined =
       typeof args._[0] === 'number' ? args._[0] : undefined;
-    const shouldDisplayInfo = args.i;
-    const shouldSortNewestFirst = args.n;
+    const shouldDisplayInfo = args.info;
+    const shouldSortNewestFirst = args.newest;
 
     const { search, searchValue } = options as {
       search: boolean | undefined;

@@ -11,15 +11,17 @@ import { safeStat } from '@/utils/safeStat';
 export const command = createCommand({
   command: 'import',
   description: 'Import media from folder',
-  args: z.object({
-    _: z.tuple([z.string().describe('Folder path')], {
-      errorMap: (issue, ctx) => {
-        if (issue.code === z.ZodIssueCode.too_small)
-          return { message: 'Missing folder path' };
-        return { message: ctx.defaultError };
-      },
+  args: {
+    schema: z.object({
+      _: z.tuple([z.string().describe('Folder path')], {
+        errorMap: (issue, ctx) => {
+          if (issue.code === z.ZodIssueCode.too_small)
+            return { message: 'Missing folder path' };
+          return { message: ctx.defaultError };
+        },
+      }),
     }),
-  }),
+  },
   async handleCommand(message, args) {
     if (!env.ADMIN_USERS.some((userId) => message.author.id === userId))
       return message.reply(`You do not have permission to use this command!`);

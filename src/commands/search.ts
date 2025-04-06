@@ -9,21 +9,23 @@ export const command = createCommand({
   command: 'search',
   aliases: ['find', 'f'],
   description: 'Search media',
-  args: z.object({
-    _: tupleWithOptional([
-      z
-        .string()
-        .regex(MEDIA_NAME_REGEX, {
-          message: 'Search value contains invalid characters',
-        })
-        .optional()
-        .describe('Search value'),
-    ]).default([undefined]),
-  }),
+  args: {
+    schema: z.object({
+      _: tupleWithOptional([
+        z
+          .string()
+          .regex(MEDIA_NAME_REGEX, {
+            message: 'Search value contains invalid characters',
+          })
+          .optional()
+          .describe('Search value'),
+      ]).default([undefined]),
+    }),
+  },
   async handleCommand(message, args, commands) {
     await getCommand.handleCommand(
       message,
-      getCommand.args!.parse({}),
+      getCommand.args!.schema.parse({}),
       commands,
       {
         search: true,

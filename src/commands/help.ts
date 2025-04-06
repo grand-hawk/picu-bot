@@ -4,6 +4,7 @@ import { EmbedBuilder, escapeMarkdown } from 'discord.js';
 
 import { createCommand } from '@/commands';
 import { env } from '@/env';
+import { getInnerType } from '@/utils/getInnerType';
 import { getTypeName } from '@/utils/getTypeName';
 
 import type { APIEmbedField } from 'discord.js';
@@ -19,16 +20,17 @@ export const command = createCommand({
       let helpText = '';
 
       if (commandModule.args) {
-        const { shape } = commandModule.args;
+        const { shape } = commandModule.args.schema;
 
+        const wrappedUnderscore = shape._ && getInnerType(shape._);
         if (
-          shape._ &&
-          Array.isArray(shape._._def.items) &&
-          shape._._def.items.length > 0
+          wrappedUnderscore &&
+          Array.isArray(wrappedUnderscore._def.items) &&
+          wrappedUnderscore._def.items.length > 0
         ) {
           helpText += 'Arguments:\n';
 
-          for (const item of shape._._def.items) {
+          for (const item of wrappedUnderscore._def.items) {
             let placeholder: string;
 
             switch (getTypeName(item)) {
@@ -46,7 +48,7 @@ export const command = createCommand({
             }
 
             const description = item._def.description || '';
-            helpText += `  <${placeholder}>\t${description}\n`;
+            helpText += `<${placeholder}>    ${description}\n`;
           }
 
           helpText += '\n';
@@ -58,8 +60,17 @@ export const command = createCommand({
 
           for (const key of optionKeys) {
             const fieldSchema = shape[key];
-            const flag = `--${key}`;
             const typeName = getTypeName(fieldSchema);
+            const flagPrefix = `-${typeName === 'ZodBoolean' ? '' : '-'}`;
+            const flags: string[] = [`${flagPrefix}${key}`];
+
+            const alias = commandModule.args?.alias?.[key];
+            if (alias) {
+              if (typeof alias === 'string')
+                flags.push(`${flagPrefix}${alias}`);
+              else if (Array.isArray(alias))
+                flags.push(...alias.map((v) => `${flagPrefix}${v}`));
+            }
 
             let valuePlaceholder = '';
             if (typeName === 'ZodString')
@@ -68,14 +79,14 @@ export const command = createCommand({
 
             let defaultText = '';
             if (fieldSchema._def.defaultValue !== undefined)
-              defaultText = ` (default: ${
+              defaultText = ` (default: \`${
                 typeof fieldSchema._def.defaultValue === 'function'
                   ? fieldSchema._def.defaultValue()
                   : fieldSchema._def.defaultValue
-              })`;
+              }\`)`;
 
             const description = fieldSchema._def.description || '';
-            helpText += `  ${flag}${valuePlaceholder}\t${description}${defaultText}\n`;
+            helpText += `${flags.join(', ')}${valuePlaceholder}    ${description}${defaultText}\n`;
           }
         }
       }

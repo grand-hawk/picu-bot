@@ -57,8 +57,10 @@ export const handleEvent: (
   log.info(`Command "${command.command}" ran by ${message.author.id}`);
 
   try {
-    const parsedArgs = minimist(args, {});
-    const parseResult = (command.args ?? defaultArgsSchema).safeParse(
+    const parsedArgs = minimist(args, {
+      alias: command.args?.alias,
+    });
+    const parseResult = (command.args?.schema ?? defaultArgsSchema).safeParse(
       parsedArgs,
     );
 

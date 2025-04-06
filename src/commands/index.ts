@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import type { Awaitable } from '@/utils/awaitable';
 import type { Message } from 'discord.js';
+import type minimist from 'minimist';
 import type { ZodTupleWithOptional } from 'zod-tuple-with-optional';
 
 export const defaultArgsSchema = z.object({});
@@ -16,7 +17,10 @@ export interface MessageCommand<T extends z.ZodRawShape = DefaultShape> {
   command: string;
   aliases?: string[];
   description?: string;
-  args?: z.ZodObject<T>;
+  args?: {
+    schema: z.ZodObject<T>;
+    alias?: minimist.Opts['alias'];
+  };
   handleCommand(
     message: Message<true>,
     args: z.infer<z.ZodObject<T>>,

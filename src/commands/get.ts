@@ -117,6 +117,7 @@ export const command = createCommand({
 
     if (shouldSortNewestFirst)
       media.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    else media.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
     let mediaIndex = 0;
     const displayCountIncrementedMedia = new Map<Media['uuid'], boolean>();

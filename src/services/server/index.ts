@@ -7,7 +7,7 @@ const app = express();
 
 let isReady = false;
 
-app.get('/healthcheck', (_, res) => res.status(isReady ? 200 : 503).send('OK'));
+app.get('/healthcheck', (_, res) => res.status(isReady ? 200 : 503).end());
 
 app.listen(env.PORT, '0.0.0.0', () =>
   log.info(`Server listening on 0.0.0.0:${env.PORT}`),

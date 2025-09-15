@@ -9,7 +9,7 @@ Intended for one bot per guild, otherwise media is shared.
 
 Users with any of the role ids in `SAVE_ROLES` env can save media. (e.g. moderators)
 Users with any of the role ids in `DELETE_ROLES` env can delete media. (e.g. admins)
-Certain commands, such as `?import`, which require access to the bot can only be used by users with any of the role ids in `ADMIN_USERS` env.
+Certain commands, such as `?import`, which require access to the bot can only be used by users with any of the user ids in `ADMIN_USERS` env.
 
 Command prefix can be customized by changing the `COMMAND_PREFIX` env, but defaults to `?`.
 

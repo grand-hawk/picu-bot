@@ -265,10 +265,9 @@ export const command = createCommand({
           }
         }
 
+        await i.deferUpdate();
         await i
-          .update(await getOptionsForCurrentMedia())
-          // Discord has a 3s timeout for these interactions, file uploads may take longer,
-          // if that happens this errors
+          .editReply(await getOptionsForCurrentMedia())
           .catch((err) => log.warn(err, 'Failed to update message'));
       });
     }

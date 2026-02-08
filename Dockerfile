@@ -22,7 +22,7 @@ RUN [ "$SKIP_MIGRATE" != "true" ] && pnpm prisma migrate deploy || echo "Skippin
 
 RUN pnpm run build
 
-RUN pnpm prune --prod
+RUN pnpm prune --prod --ignore-scripts
 
 # Package layer
 FROM node:22-alpine AS package

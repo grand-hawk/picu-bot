@@ -21,7 +21,6 @@ export const env = createEnv({
 
     DATABASE_URL: z.string().url(),
     MEDIA_SAVE_PATH: z.string().default('/picu-media'),
-    COMMAND_PREFIX: z.string().default('?'),
     SAVE_ROLES: stringArray,
     DELETE_ROLES: stringArray,
     ADMIN_USERS: stringArray,

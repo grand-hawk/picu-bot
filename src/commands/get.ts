@@ -3,10 +3,9 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ComponentType,
+  SlashCommandBuilder,
   escapeMarkdown,
 } from 'discord.js';
-import { z } from 'zod';
-import { tupleWithOptional } from 'zod-tuple-with-optional';
 
 import { createCommand } from '@/commands';
 import { COLLECTOR_IDLE_TIMEOUT, MEDIA_NAME_REGEX } from '@/constants';
@@ -17,41 +16,67 @@ import { prisma } from '@/services/database';
 import { formatIndex } from '@/utils/formatIndex';
 
 import type { Media, Prisma } from '@prisma/client';
-import type { InteractionUpdateOptions } from 'discord.js';
+import type {
+  InteractionEditReplyOptions,
+  SlashCommandOptionsOnlyBuilder,
+} from 'discord.js';
+
+export function addGetOptions(builder: SlashCommandBuilder) {
+  return builder
+    .addStringOption((option) =>
+      option
+        .setName('name')
+        .setDescription('Media name or index')
+        .setRequired(false),
+    )
+    .addBooleanOption((option) =>
+      option
+        .setName('info')
+        .setDescription('Show media info')
+        .setRequired(false),
+    )
+    .addBooleanOption((option) =>
+      option
+        .setName('newest')
+        .setDescription('Show newest media first')
+        .setRequired(false),
+    );
+}
+
+export function addListOptions(builder: SlashCommandOptionsOnlyBuilder) {
+  return builder
+    .addBooleanOption((option) =>
+      option
+        .setName('info')
+        .setDescription('Show media info')
+        .setRequired(false),
+    )
+    .addBooleanOption((option) =>
+      option
+        .setName('newest')
+        .setDescription('Show newest media first')
+        .setRequired(false),
+    );
+}
 
 export const command = createCommand({
-  command: 'get',
-  aliases: ['i', 'img', 'image'],
-  description: 'Get media',
-  args: {
-    schema: z.object({
-      _: tupleWithOptional([
-        z
-          .union([
-            z.string().regex(MEDIA_NAME_REGEX, {
-              message: 'Media name contains invalid characters',
-            }),
-            z.number(),
-          ])
-          .optional()
-          .describe('Media name'),
-      ]).default([undefined]),
-      info: z.boolean().default(false).describe('Show media info'),
-      newest: z.boolean().default(false).describe('Show newest media first'),
-    }),
-    alias: {
-      info: ['i'],
-      newest: ['n'],
-    },
-  },
-  async handleCommand(message, args, _commands, options) {
-    const fileName: string | undefined = args._[0]
-      ? String(args._[0])
-      : undefined;
-    const fileIndex: number | undefined =
-      typeof args._[0] === 'number' ? args._[0] : undefined;
-    const shouldDisplayInfo = args.info;
-    const shouldSortNewestFirst = args.newest;
+  data: addGetOptions(
+    new SlashCommandBuilder().setName('get').setDescription('Get media'),
+  ),
+  async handleCommand(interaction, _commands, options) {
+    const nameOption = interaction.options.getString('name') ?? undefined;
+    if (nameOption && !MEDIA_NAME_REGEX.test(nameOption))
+      return interaction.reply({
+        content: 'Media name contains invalid characters',
+        ephemeral: true,
+      });
+
+    const fileName = nameOption;
+    const parsedIndex = nameOption ? Number(nameOption) : NaN;
+    const fileIndex = Number.isInteger(parsedIndex) ? parsedIndex : undefined;
+    const shouldDisplayInfo = interaction.options.getBoolean('info') ?? false;
+    const shouldSortNewestFirst =
+      interaction.options.getBoolean('newest') ?? false;
 
     const { search, searchValue } = options as {
       search: boolean | undefined;
@@ -59,6 +84,8 @@ export const command = createCommand({
     };
     // authenticated in the delete command
     const allowDeletion = options.allowDeletion as boolean | undefined;
+
+    await interaction.deferReply();
 
     const query: Prisma.MediaFindManyArgs = {
       where: {
@@ -79,7 +106,7 @@ export const command = createCommand({
         mode: 'insensitive',
       } satisfies Prisma.StringFilter<'Media'>;
 
-    if (fileIndex && !Number.isNaN(fileIndex))
+    if (fileIndex)
       query.where = {
         ...query.where,
         OR: [
@@ -96,7 +123,7 @@ export const command = createCommand({
       };
 
     let media = await prisma.media.findMany(query);
-    if (!media.length) return message.reply('No media found!');
+    if (!media.length) return interaction.editReply('No media found!');
     if (!fileName && !search) {
       const weights = media.map((m) => 1 / (m.displayCount + 1));
       const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
@@ -124,12 +151,12 @@ export const command = createCommand({
 
     const getRow = () => {
       const previous = new ButtonBuilder()
-        .setCustomId(`${message.id}-previous`)
+        .setCustomId(`${interaction.id}-previous`)
         .setLabel(`(${mediaIndex}) Previous`)
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(mediaIndex === 0);
       const next = new ButtonBuilder()
-        .setCustomId(`${message.id}-next`)
+        .setCustomId(`${interaction.id}-next`)
         .setLabel(`Next (${media.length - mediaIndex - 1})`)
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(mediaIndex === media.length - 1);
@@ -138,7 +165,7 @@ export const command = createCommand({
 
       if (allowDeletion) {
         const deleteButton = new ButtonBuilder()
-          .setCustomId(`${message.id}-delete`)
+          .setCustomId(`${interaction.id}-delete`)
           .setLabel('Delete')
           .setStyle(ButtonStyle.Danger);
 
@@ -152,8 +179,8 @@ export const command = createCommand({
 
     const getOptionsForCurrentMedia = async () => {
       const baseOptions = {
-        components: media.length > 1 || allowDeletion ? [getRow()] : undefined,
-      } satisfies InteractionUpdateOptions;
+        components: media.length > 1 || allowDeletion ? [getRow()] : [],
+      } satisfies InteractionEditReplyOptions;
 
       const targetMedia = media[mediaIndex];
       if (!targetMedia)
@@ -161,7 +188,7 @@ export const command = createCommand({
           content: 'Error!',
           files: [],
           ...baseOptions,
-        } satisfies InteractionUpdateOptions;
+        } satisfies InteractionEditReplyOptions;
 
       const mediaFile = await prepareMediaFile(targetMedia);
       if (!mediaFile)
@@ -169,7 +196,7 @@ export const command = createCommand({
           content: 'Could not get media!',
           files: [],
           ...baseOptions,
-        } satisfies InteractionUpdateOptions;
+        } satisfies InteractionEditReplyOptions;
 
       if (!displayCountIncrementedMedia.get(targetMedia.uuid)) {
         displayCountIncrementedMedia.set(targetMedia.uuid, true);
@@ -207,19 +234,17 @@ export const command = createCommand({
             : ''
         }`,
         files: [mediaFile.attachment],
-        allowedMentions: {
-          repliedUser: true,
-          users: [message.author.id],
-        },
         ...baseOptions,
-      } satisfies InteractionUpdateOptions;
+      } satisfies InteractionEditReplyOptions;
     };
 
-    const response = await message.reply(await getOptionsForCurrentMedia());
+    const response = await interaction.editReply(
+      await getOptionsForCurrentMedia(),
+    );
 
     if (media.length > 1 || allowDeletion) {
       const collector = response.createMessageComponentCollector({
-        filter: (i) => i.user.id === message.author.id,
+        filter: (i) => i.user.id === interaction.user.id,
         componentType: ComponentType.Button,
         time: COLLECTOR_IDLE_TIMEOUT,
       });
@@ -227,21 +252,21 @@ export const command = createCommand({
       collector.on('collect', async (i) => {
         // eslint-disable-next-line default-case
         switch (i.customId) {
-          case `${message.id}-previous`: {
+          case `${interaction.id}-previous`: {
             if (mediaIndex === 0) return;
             mediaIndex -= 1;
 
             break;
           }
 
-          case `${message.id}-next`: {
+          case `${interaction.id}-next`: {
             if (mediaIndex === media.length - 1) return;
             mediaIndex += 1;
 
             break;
           }
 
-          case `${message.id}-delete`: {
+          case `${interaction.id}-delete`: {
             if (!allowDeletion) return;
 
             const targetMedia = media[mediaIndex];

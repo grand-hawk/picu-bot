@@ -1,20 +1,24 @@
+import { SlashCommandBuilder } from 'discord.js';
+
 import { createCommand } from '@/commands';
-import { command as getCommand } from '@/commands/get';
+import { addListOptions, command as getCommand } from '@/commands/get';
 
 export const command = createCommand({
-  command: 'search',
-  aliases: ['find', 'f'],
-  description: 'Search media',
-  args: getCommand.args,
-  async handleCommand(message, args, commands) {
-    await getCommand.handleCommand(
-      message,
-      { ...args, _: [undefined] },
-      commands,
-      {
-        search: true,
-        searchValue: args._[0],
-      },
-    );
+  data: addListOptions(
+    new SlashCommandBuilder()
+      .setName('search')
+      .setDescription('Search media')
+      .addStringOption((option) =>
+        option
+          .setName('query')
+          .setDescription('Media name to search for')
+          .setRequired(true),
+      ),
+  ),
+  async handleCommand(interaction, commands) {
+    await getCommand.handleCommand(interaction, commands, {
+      search: true,
+      searchValue: interaction.options.getString('query', true),
+    });
   },
 });

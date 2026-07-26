@@ -9,9 +9,7 @@ Intended for one bot per guild, otherwise media is shared.
 
 Users with any of the role ids in `SAVE_ROLES` env can save media. (e.g. moderators)
 Users with any of the role ids in `DELETE_ROLES` env can delete media. (e.g. admins)
-Certain commands, such as `?import`, which require access to the bot can only be used by users with any of the user ids in `ADMIN_USERS` env.
-
-Command prefix can be customized by changing the `COMMAND_PREFIX` env, but defaults to `?`.
+Certain commands, such as `/import`, which require access to the bot can only be used by users with any of the user ids in `ADMIN_USERS` env.
 
 The folder where media is saved can be customized by changing the `MEDIA_SAVE_PATH` env, defaults to `/picu-media`.
 
@@ -22,4 +20,10 @@ The `PORT` env can be used to customize the port the server will make the `/heal
 
 ## Commands
 
-Use `?help` to get a list of commands and their arguments.
+The bot uses slash commands, so invite it with the `applications.commands` scope.
+Commands are registered globally on startup and may take up to an hour to appear the first time.
+
+Discord's command picker documents every command and option, or use `/help` for the same list in one message.
+
+To save media someone else posted, right click (or long press) their message and pick **Apps → Save media**.
+`/save` takes the file directly, for media you are uploading yourself.

@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-import { z } from 'zod';
+import { SlashCommandBuilder } from 'discord.js';
 
 import { createCommand } from '@/commands';
 import { env } from '@/env';
@@ -9,37 +9,38 @@ import { log } from '@/pino';
 import { safeStat } from '@/utils/safeStat';
 
 export const command = createCommand({
-  command: 'import',
-  description: 'Import media from folder',
-  args: {
-    schema: z.object({
-      _: z.tuple([z.string().describe('Folder path')], {
-        errorMap: (issue, ctx) => {
-          if (issue.code === z.ZodIssueCode.too_small)
-            return { message: 'Missing folder path' };
-          return { message: ctx.defaultError };
-        },
-      }),
-    }),
-  },
-  async handleCommand(message, args) {
-    if (!env.ADMIN_USERS.some((userId) => message.author.id === userId))
-      return message.reply(`You do not have permission to use this command!`);
+  data: new SlashCommandBuilder()
+    .setName('import')
+    .setDescription('Import media from folder')
+    .addStringOption((option) =>
+      option.setName('path').setDescription('Folder path').setRequired(true),
+    ),
+  async handleCommand(interaction) {
+    if (!env.ADMIN_USERS.some((userId) => interaction.user.id === userId))
+      return interaction.reply({
+        content: 'You do not have permission to use this command!',
+        ephemeral: true,
+      });
 
-    const folderPath = args._[0];
+    const folderPath = interaction.options.getString('path', true);
     const resolvedPath = path.resolve(folderPath);
     const resolvedPathStat = await safeStat(resolvedPath);
     if (!resolvedPathStat || !resolvedPathStat.isDirectory())
-      return message.reply('Invalid folder path!');
+      return interaction.reply({
+        content: 'Invalid folder path!',
+        ephemeral: true,
+      });
+
+    await interaction.deferReply();
 
     try {
       log.info(`Importing media from folder "${folderPath}"`);
 
       const importedMedia = await importMediaFromFolder(resolvedPath);
-      return message.reply(`Imported ${importedMedia.length} media!`);
+      return interaction.editReply(`Imported ${importedMedia.length} media!`);
     } catch (err) {
       log.error(err, `Failed to import media from folder "${folderPath}"`);
-      return message.reply('Failed to import media!');
+      return interaction.editReply('Failed to import media!');
     }
   },
 });

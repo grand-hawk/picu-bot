@@ -1,92 +1,78 @@
-import { escapeMarkdown } from 'discord.js';
-import { z } from 'zod';
+import { SlashCommandBuilder, escapeMarkdown } from 'discord.js';
 
 import { createCommand } from '@/commands';
 import { MEDIA_NAME_REGEX } from '@/constants';
 import { env } from '@/env';
 import { saveMedia } from '@/lib/saveMedia';
+import { log } from '@/pino';
 import { formatIndex } from '@/utils/formatIndex';
-import { getRepliedToMessage } from '@/utils/getRepliedToMessage';
 import { maxUploadSizeFromTier } from '@/utils/maxUploadSizeFromTier';
 
+import type { GuildMember, RepliableInteraction } from 'discord.js';
+
+export function canSave(member: GuildMember) {
+  return env.SAVE_ROLES.some((roleId) => member.roles.cache.get(roleId));
+}
+
+// interaction must already be deferred
+export async function saveAndReply(
+  interaction: RepliableInteraction<'cached'>,
+  name: string,
+  downloadURL: string,
+  maxSize: number,
+) {
+  const media = await saveMedia(
+    name.toLowerCase(),
+    interaction.user.id,
+    downloadURL,
+    maxSize,
+  ).catch((err) => {
+    log.warn(err, 'Failed to save media');
+    return null;
+  });
+
+  if (!media)
+    return interaction.editReply('There was an error saving the media!');
+
+  // lower case was done in saveMedia
+  return interaction.editReply(
+    `Saved as "${escapeMarkdown(media.name)}"${formatIndex(media.index)}`,
+  );
+}
+
 export const command = createCommand({
-  command: 'save',
-  aliases: ['s'],
-  description: 'Save media',
-  args: {
-    schema: z.object({
-      _: z.tuple(
-        [
-          z
-            .string()
-            .regex(MEDIA_NAME_REGEX, {
-              message: 'Media name contains invalid characters',
-            })
-            .describe('Media name'),
-        ],
-        {
-          errorMap: (issue, ctx) => {
-            if (issue.code === z.ZodIssueCode.too_small)
-              return { message: 'Missing media name' };
-            return { message: ctx.defaultError };
-          },
-        },
-      ),
-    }),
-  },
-  async handleCommand(message, args) {
-    const { member } = message;
-    if (!member) return;
+  data: new SlashCommandBuilder()
+    .setName('save')
+    .setDescription('Save media')
+    .addStringOption((option) =>
+      option.setName('name').setDescription('Media name').setRequired(true),
+    )
+    .addAttachmentOption((option) =>
+      option.setName('file').setDescription('Media to save').setRequired(true),
+    ),
+  async handleCommand(interaction) {
+    if (!canSave(interaction.member))
+      return interaction.reply({
+        content: 'You do not have permission to use this command!',
+        ephemeral: true,
+      });
 
-    if (!env.SAVE_ROLES.some((roleId) => member.roles.cache.get(roleId)))
-      return message.reply(`You do not have permission to use this command!`);
+    const name = interaction.options.getString('name', true);
+    if (!MEDIA_NAME_REGEX.test(name))
+      return interaction.reply({
+        content: 'Media name contains invalid characters',
+        ephemeral: true,
+      });
 
-    const fileName = args._[0];
-    const targetMessage = (await getRepliedToMessage(message)) || message;
-    const maxSize = maxUploadSizeFromTier(targetMessage.guild.premiumTier);
-    let downloadURL: string | undefined;
+    const attachment = interaction.options.getAttachment('file', true);
+    const maxSize = maxUploadSizeFromTier(interaction.guild.premiumTier);
+    if (attachment.size > maxSize)
+      return interaction.reply({
+        content: `Media is larger than ${maxSize / 1e6} MB!`,
+        ephemeral: true,
+      });
 
-    if (!downloadURL)
-      for (const attachment of targetMessage.attachments.values()) {
-        if (attachment.size > maxSize) continue;
-
-        downloadURL = attachment.url;
-
-        break;
-      }
-
-    if (!downloadURL)
-      for (const embed of targetMessage.embeds) {
-        if (!embed.data) continue;
-        if (
-          embed.data.type !== 'video' &&
-          embed.data.type !== 'image' &&
-          embed.data.type !== 'gifv'
-        )
-          continue;
-
-        const mediaObject = embed.data.video || embed.data.thumbnail;
-        if (!mediaObject) continue;
-
-        downloadURL = mediaObject.proxy_url;
-
-        break;
-      }
-
-    if (!downloadURL) return message.reply('No valid media found!');
-
-    const media = await saveMedia(
-      fileName.toLowerCase(),
-      message.author.id,
-      downloadURL,
-      maxSize,
-    );
-
-    if (media)
-      await message.reply(
-        // lower case was done in saveMedia
-        `Saved as "${escapeMarkdown(media.name)}"${formatIndex(media.index)}`,
-      );
-    else await message.reply('There was an error saving the media!');
+    await interaction.deferReply();
+    return saveAndReply(interaction, name, attachment.url, maxSize);
   },
 });

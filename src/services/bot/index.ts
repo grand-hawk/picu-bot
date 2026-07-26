@@ -9,11 +9,7 @@ import { importPath } from '@/utils/importPath';
 import type { EventModule } from '@/services/bot/events';
 
 export const client = new Client({
-  intents: [
-    IntentsBitField.Flags.Guilds,
-    IntentsBitField.Flags.GuildMessages,
-    IntentsBitField.Flags.MessageContent,
-  ],
+  intents: [IntentsBitField.Flags.Guilds],
 });
 
 for await (const file of klaw('dist/services/bot/events')) {

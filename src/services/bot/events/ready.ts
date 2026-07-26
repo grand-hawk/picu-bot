@@ -11,7 +11,13 @@ export const handleEvent: (
 ) => unknown = async (client) => {
   try {
     const registered = await client.application.commands.set(
-      [...commands.values()].map(({ data }) => data),
+      [...commands.values()].flatMap(({ data, aliases }) => {
+        const json = data.toJSON();
+        return [
+          json,
+          ...(aliases ?? []).map((alias) => ({ ...json, name: alias })),
+        ];
+      }),
     );
     log.info(`Registered ${registered.size} application commands`);
   } catch (err) {

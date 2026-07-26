@@ -50,6 +50,7 @@ export const command = createCommand({
     .addAttachmentOption((option) =>
       option.setName('file').setDescription('Media to save').setRequired(true),
     ),
+  aliases: ['s'],
   async handleCommand(interaction) {
     if (!canSave(interaction.member))
       return interaction.reply({

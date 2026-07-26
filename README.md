@@ -23,7 +23,9 @@ The `PORT` env can be used to customize the port the server will make the `/heal
 The bot uses slash commands, so invite it with the `applications.commands` scope.
 Commands are registered globally on startup and may take up to an hour to appear the first time.
 
-Discord's command picker documents every command and option, or use `/help` for the same list in one message.
+Discord's command picker documents every command and option, or use `/help` for the same list plus aliases in one message.
+
+Discord has no alias mechanism, so each alias (`/i`, `/img`, `/image` for `/get`, and so on) is registered as its own command sharing the same handler and options.
 
 To save media someone else posted, right click (or long press) their message and pick **Apps → Save media**.
 `/save` takes the file directly, for media you are uploading yourself.

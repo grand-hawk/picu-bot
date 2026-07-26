@@ -14,7 +14,11 @@ export const handleEvent: (
   if (interaction.isModalSubmit()) return handleSaveModal(interaction);
   if (!interaction.isCommand()) return;
 
-  const command = commands.get(interaction.commandName);
+  const command =
+    commands.get(interaction.commandName) ??
+    [...commands.values()].find((c) =>
+      c.aliases?.includes(interaction.commandName),
+    );
   if (!command) return;
 
   log.info(

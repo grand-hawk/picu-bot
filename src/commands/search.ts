@@ -15,6 +15,7 @@ export const command = createCommand({
           .setRequired(true),
       ),
   ),
+  aliases: ['find', 'f'],
   async handleCommand(interaction, commands) {
     await getCommand.handleCommand(interaction, commands, {
       search: true,

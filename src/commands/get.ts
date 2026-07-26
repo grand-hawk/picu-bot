@@ -63,6 +63,7 @@ export const command = createCommand({
   data: addGetOptions(
     new SlashCommandBuilder().setName('get').setDescription('Get media'),
   ),
+  aliases: ['i', 'img', 'image'],
   async handleCommand(interaction, _commands, options) {
     const nameOption = interaction.options.getString('name') ?? undefined;
     if (nameOption && !MEDIA_NAME_REGEX.test(nameOption))

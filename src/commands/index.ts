@@ -15,6 +15,7 @@ export interface Command<
     | SlashCommandBuilder
     | SlashCommandOptionsOnlyBuilder
     | ContextMenuCommandBuilder;
+  aliases?: string[];
   handleCommand(
     interaction: I,
     commands: Map<string, Command<CommandInteraction<'cached'>>>,

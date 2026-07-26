@@ -8,6 +8,7 @@ export const command = createCommand({
   data: addGetOptions(
     new SlashCommandBuilder().setName('delete').setDescription('Delete media'),
   ),
+  aliases: ['d', 'del'],
   async handleCommand(interaction, commands) {
     if (
       !env.DELETE_ROLES.some((roleId) =>
